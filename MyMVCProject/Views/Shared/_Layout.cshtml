@@ -30,7 +30,7 @@
                         <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Women</a></li>
                         <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Men</a></li>
                         <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Kids</a></li>
-                        <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">BeautME</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Beauty</a></li>
                     </ul>
 
                     <!-- Right Side -->
@@ -39,7 +39,30 @@
                         <a class="btn btn-outline-secondary me-2 d-flex align-items-center" asp-controller="Home" asp-action="Wishlist">
                             <i class="bi bi-heart me-1"></i> Wishlist
                         </a>
-                        <a class="btn btn-primary me-2" asp-controller="Account" asp-action="Login">Login</a>
+                        @{
+                            var username = Context.Session.GetString("Username");
+                        }
+
+                        @if (string.IsNullOrEmpty(username))
+                        {
+                            <a class="btn btn-primary me-2" asp-controller="Account" asp-action="Login">Login</a>
+                        }
+                        else
+                        {
+                            <div class="dropdown">
+                                <button class="btn btn-success dropdown-toggle me-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    @username
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" asp-controller="Account" asp-action="MyOrders">My Orders</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Account" asp-action="Logout">Logout</a></li>
+                                    
+                                  
+                                </ul>
+                            </div>
+                        }
+
+
 
                         <!-- Enhanced Toggle -->
                         <button id="themeToggle" type="button" title="Switch Theme">
@@ -71,6 +94,9 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+
     <!-- Theme Toggle Script -->
     <script>
         const toggleBtn = document.getElementById('themeToggle');
@@ -101,6 +127,8 @@
 
 
     @await RenderSectionAsync("Scripts", required: false)
+ 
+
 </body>
 
 </html>
