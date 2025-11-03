@@ -1,4 +1,15 @@
-﻿// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
+﻿document.addEventListener("DOMContentLoaded", function () {
+    const splash = document.getElementById("splash-screen");
+    if (!splash) return;
 
-// Write your JavaScript code.
+    const hasVisited = sessionStorage.getItem("visited");
+
+    if (!hasVisited) {
+        setTimeout(() => {
+            splash.classList.add("hidden");
+        }, 300000); // stays for 4 seconds now
+        sessionStorage.setItem("visited", "true");
+    } else {
+        splash.classList.add("hidden");
+    }
+});

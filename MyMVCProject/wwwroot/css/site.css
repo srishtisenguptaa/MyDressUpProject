@@ -20,6 +20,7 @@ min-height: 100%;
 body {
     font-family: 'Poppins', sans-serif;
     transition: background-color 0.4s ease, color 0.4s ease;
+   /* font-family: 'Great Vibes';*/
 }
 
 .navbar {
@@ -29,6 +30,7 @@ body {
     border-bottom: 1px solid rgba(255, 255, 255, 0.3);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
     padding: 0.8rem 1rem;
+    font-family: 'Great Vibes', cursive;
 }
 .dark-mode .navbar-brand {
     color: #f8f9fa !important;
@@ -179,4 +181,82 @@ text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
         .dark-mode .navbar-nav .nav-link.active {
             color: #fff !important;
         }
+/* Splash Screen */
+.splash-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(to bottom right, rgba(255,255,255,0.98), rgba(240,240,240,1));
+    color: #000;
+    z-index: 99999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 1.5s ease-out, visibility 1.5s ease-out;
+    font-family: 'Playfair Display', serif;
+}
+
+body.dark-mode .splash-screen {
+    background: linear-gradient(to bottom right, #000, #111);
+    color: #fff;
+}
+
+/* Text Style */
+.splash-text {
+    font-size: 6rem;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: 3px;
+    font-family: 'Great Vibes', cursive;
+    color: #000;
+    position: relative;
+    overflow: hidden;
+    animation: fadeInZoom 2s ease-out forwards;
+}
+
+    /* Light shimmer moving across text */
+    .splash-text::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -75%;
+        width: 50%;
+        height: 100%;
+        background: linear-gradient( 120deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0) 100% );
+        animation: shimmer 4s infinite;
+    }
+
+/* Shimmer animation */
+@keyframes shimmer {
+    0% {
+        left: -75%;
+    }
+
+    100% {
+        left: 125%;
+    }
+}
+
+/* Fade in + zoom animation */
+@keyframes fadeInZoom {
+    0% {
+        opacity: 0;
+        transform: scale(0.85);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.splash-screen.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
 

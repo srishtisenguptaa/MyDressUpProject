@@ -8,10 +8,16 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/MyMVCProject.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-   
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+
 
 </head>
 <body>
+    <!-- Splash Screen -->
+    <div id="splash-screen" class="splash-screen d-flex justify-content-center align-items-center">
+        <h1 class="splash-text">Let's Play DressUp</h1>
+    </div>
+
     <header>
         <nav class="navbar navbar-expand-sm navbar-light fixed-top">
             <div class="container-fluid">
@@ -125,6 +131,11 @@
             setTimeout(() => toggleBtn.style.transform = "rotate(0deg)", 400);
         });
     </script>
+
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
 
 
     @await RenderSectionAsync("Scripts", required: false)
