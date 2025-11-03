@@ -13,6 +13,10 @@ namespace MyMVCProject.Controllers
             _logger = logger;
         }
 
+        public IActionResult WomenSection()
+        {
+            return View();
+        }
         public IActionResult Index()
         {
             return View();
