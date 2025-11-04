@@ -1,45 +1,103 @@
-﻿@{
-    ViewData["Title"] = "DressUp - Home";
+﻿@* @{
+    ViewData["Title"] = "DressUp Gallery";
 }
 
-<link rel="stylesheet" href="~/css/index.css" />
+<div class="container my-5">
+    <h2 class="text-center mb-4">Let's Play DressUp</h2>
+    <div id="gallery" class="row"></div>
 
-<div class="container py-5">
-    <div class="masonry">
-        <div class="item">
-            <img src="https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb" alt="Floral Dress">
-            <h5>Floral Dress</h5>
-            <p>Zara | ₹1,499 | ⭐ 4.5</p>
-        </div>
-
-        <div class="item">
-            <img src="https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=800&q=80" alt="Blazer">
-            <h5>Modern Blazer</h5>
-            <p>H&M | ₹3,299 | ⭐ 4.7</p>
-        </div>
-
-        <div class="item">
-            <img src="https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?auto=format&fit=crop&w=800&q=80" alt="Shirt">
-            <h5>Casual Shirt</h5>
-            <p>Levi’s | ₹1,099 | ⭐ 4.3</p>
-        </div>
-
-        <div class="item">
-            <img src="https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb" alt="Evening Gown">
-            <h5>Evening Gown</h5>
-            <p>Mango | ₹4,299 | ⭐ 4.9</p>
-        </div>
-
-        <div class="item">
-            <img src="https://images.unsplash.com/photo-1576201836106-db1758fd1c97?auto=format&fit=crop&w=800&q=80" alt="Jacket">
-            <h5>Denim Jacket</h5>
-            <p>Roadster | ₹2,299 | ⭐ 4.6</p>
-        </div>
-
-        <div class="item">
-            <img src="https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=800&q=80" alt="Outfit">
-            <h5>Streetwear Set</h5>
-            <p>Urbanic | ₹1,999 | ⭐ 4.4</p>
+    <div id="loader" class="text-center my-4">
+        <div class="spinner-border text-secondary" role="status">
+            <span class="visually-hidden">Loading...</span>
         </div>
     </div>
 </div>
+@section Scripts {
+    <script src="~/js/Index.js"></script>
+}
+ *@
+<link rel="stylesheet" href="~/css/Index.css" asp-append-version="true" />
+
+<div class="container my-5">
+    <h2 class="text-center mb-4 fancy-heading">Discover Your Style ✨</h2>
+
+    <section id="gallery" class="gallery-grid"></section>
+
+    <div id="loading" class="text-center mt-4">
+        <div class="spinner-border text-dark" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        const gallery = document.getElementById('gallery');
+        const loading = document.getElementById('loading');
+
+        const images = [
+            { src: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80', title: 'Floral Dress', brand: 'Zara', price: '₹1,499', rating: '⭐ 4.5', gender: 'women', type: 'dress' },
+            { src: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=800&q=80', title: 'Denim Jacket', brand: 'Levis', price: '₹2,199', rating: '⭐ 4.7', gender: 'men', type: 'jacket' },
+            { src: 'https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?auto=format&fit=crop&w=800&q=80', title: 'Party Dress', brand: 'Forever21', price: '₹2,499', rating: '⭐ 4.8', gender: 'women', type: 'dress' },
+            { src: 'https://images.unsplash.com/photo-1506812574058-fc75fa93fead?auto=format&fit=crop&w=800&q=80', title: 'Jumpsuit', brand: 'Zudio', price: '₹1,799', rating: '⭐ 4.4', gender: 'women', type: 'jumpsuit' },
+            { src: 'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=800&q=80', title: 'Ethnic Kurta', brand: 'Biba', price: '₹1,299', rating: '⭐ 4.6', gender: 'women', type: 'kurta' },
+            { src: 'https://images.unsplash.com/photo-1507680434567-5739c80be1ac?auto=format&fit=crop&w=800&q=80', title: 'Summer Skirt', brand: 'Vero Moda', price: '₹999', rating: '⭐ 4.3', gender: 'women', type: 'skirt' },
+            { src: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=800&q=80', title: 'Casual Tee', brand: 'H&M', price: '₹799', rating: '⭐ 4.2', gender: 'men', type: 'tshirt' },
+            { src: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=800&q=80', title: 'Casual Tee', brand: 'H&M', price: '₹799', rating: '⭐ 4.2', gender: 'men', type: 'shirt' },
+        ];
+
+        let index = 0;
+        const chunkSize = 20;
+        let searchTerm = localStorage.getItem('dressup-search') || '';
+
+                function filterImages() {
+            if (!searchTerm) return images;
+
+            const terms = searchTerm.split(' '); // break into words like ['women', 'skirt']
+            return images.filter(item =>
+                terms.every(t =>
+                    item.title.toLowerCase().includes(t) ||
+                    item.brand.toLowerCase().includes(t) ||
+                    item.gender.toLowerCase().includes(t) ||
+                    item.type.toLowerCase().includes(t)
+                )
+            );
+        }
+
+
+        const filtered = filterImages();
+
+        function loadMore() {
+            const slice = filtered.slice(index, index + chunkSize);
+            slice.forEach(item => {
+                const fig = document.createElement('figure');
+                fig.classList.add('item');
+                fig.innerHTML = `
+                    <img src="${item.src}" alt="${item.title}">
+                    <figcaption>
+                        <h5>${item.title}</h5>
+                        <p>${item.brand} | ${item.price}</p>
+                        <span>${item.rating}</span>
+                    </figcaption>
+                `;
+                gallery.appendChild(fig);
+            });
+            index += chunkSize;
+            loading.style.display = "none";
+        }
+
+        loadMore();
+
+        // Auto-load while scrolling
+        const observer = new IntersectionObserver(entries => {
+            if (entries[0].isIntersecting && index < filtered.length) {
+                loading.style.display = "block";
+                setTimeout(() => loadMore(), 800);
+            }
+        });
+        observer.observe(loading);
+
+        // Clear the search once used
+        localStorage.removeItem('dressup-search');
+    </script>
+}
+

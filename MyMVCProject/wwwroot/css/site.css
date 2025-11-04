@@ -30,7 +30,7 @@ body {
     border-bottom: 1px solid rgba(255, 255, 255, 0.3);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
     padding: 0.8rem 1rem;
-    font-family: 'Great Vibes', cursive;
+    font-family: 'Playfair Display';
 }
 .dark-mode .navbar-brand {
     color: #f8f9fa !important;
@@ -260,3 +260,33 @@ body.dark-mode .splash-screen {
     visibility: hidden;
 }
 
+.btn-outline-secondary {
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+    .btn-outline-secondary:hover {
+        background-color: #000;
+        color: #fff;
+    }
+
+.bi {
+    font-size: 1.1rem;
+}
+.btn-outline-secondary {
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+    .btn-outline-secondary:hover {
+        background-color: #000;
+        color: #fff;
+    }
+
+.bi {
+    font-size: 1.1rem;
+}
