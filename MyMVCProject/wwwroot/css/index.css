@@ -1,0 +1,57 @@
+﻿/* Masonry Layout */
+.masonry {
+    column-count: 3;
+    column-gap: 1.5rem;
+}
+
+.item {
+    display: inline-block;
+    background-color: #f8f5f0;
+    margin-bottom: 1.5rem;
+    width: 100%;
+    transition: all 0.3s ease;
+    break-inside: avoid;
+}
+
+    .item img {
+        width: 100%;
+        height: auto;
+        object-fit: cover;
+        display: block;
+        transition: transform 0.4s ease, filter 0.4s ease;
+    }
+
+    .item:hover img {
+        transform: scale(1.05);
+        filter: brightness(0.9);
+    }
+
+    .item h5, .item p {
+        padding: 10px 15px 0 15px;
+        margin: 0;
+    }
+
+    .item p {
+        padding-bottom: 15px;
+        font-size: 0.9rem;
+        color: #555;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .item:hover {
+        background-color: #f0e7df;
+        transform: translateY(-4px);
+    }
+
+/* Responsive columns */
+@media (max-width: 992px) {
+    .masonry {
+        column-count: 2;
+    }
+}
+
+@media (max-width: 576px) {
+    .masonry {
+        column-count: 1;
+    }
+}
