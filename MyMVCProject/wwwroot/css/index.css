@@ -148,3 +148,83 @@ body {
 #loading {
     display: none;
 }
+/* Hover options inside figcaption */
+.hover-options {
+    display: none;
+    margin-top: 8px;
+    transition: all 0.3s ease;
+}
+
+/* Show extra options on hover */
+.item:hover .hover-options {
+    display: block;
+}
+
+/* Sizes */
+.sizes {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.size {
+    border: 1px solid #fff;
+    background: transparent;
+    color: #fff;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+    .size:hover {
+        background: #fff;
+        color: #000;
+    }
+
+/* Buttons */
+.actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+/* Wishlist heart */
+.wishlist-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.3rem;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+    .wishlist-btn.active {
+        color: #ff4081; /* pink heart */
+    }
+
+/* Add to cart */
+.add-cart {
+    background: #fff;
+    color: #000;
+    border: none;
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+    .add-cart:hover {
+        background: #ff4081;
+        color: #fff;
+    }
+.size.selected {
+    background: #fff;
+    color: #000;
+    border-color: #ff4081;
+    font-weight: bold;
+}
+

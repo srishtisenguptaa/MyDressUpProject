@@ -1,0 +1,64 @@
+﻿@page
+@model MyMVCProject.Views.Home.WishListModel
+
+@{
+    //ViewData["Title"] = "Wishlist";
+}
+
+<div class="container mt-5">
+    <h2 class="mb-4 text-center">Your Wishlist ❤️</h2>
+    <div id="wishlist-container" class="row gy-4"></div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+            const container = document.getElementById('wishlist-container');
+
+            if (wishlist.length === 0) {
+                container.innerHTML = `<p class="text-center text-muted">Your wishlist is empty!</p>`;
+                return;
+            }
+
+            container.innerHTML = wishlist.map(item => `
+                <div class="col-md-3">
+                    <div class="card shadow-sm h-100">
+                        <img src="${item.src}" class="card-img-top" alt="${item.title}">
+                        <div class="card-body text-center">
+                            <h6 class="card-title">${item.title}</h6>
+                            <p class="card-text">${item.price}</p>
+                            <button class="btn btn-outline-danger remove-btn" data-src="${item.src}">
+                                <i class="bi bi-trash"></i> Remove
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Remove item from wishlist
+            container.addEventListener('click', (e) => {
+                const btn = e.target.closest('.remove-btn');
+                if (!btn) return;
+
+                const src = btn.dataset.src;
+                let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+                wishlist = wishlist.filter(x => x.src !== src);
+                localStorage.setItem('wishlist', JSON.stringify(wishlist));
+
+                btn.closest('.col-md-3').remove();
+
+                // Update badge
+                const badge = document.getElementById('wishlist-count');
+                if (badge) {
+                    badge.style.display = wishlist.length > 0 ? 'inline-block' : 'none';
+                    badge.textContent = wishlist.length;
+                }
+
+                if (wishlist.length === 0) {
+                    container.innerHTML = `<p class="text-center text-muted">Your wishlist is empty!</p>`;
+                }
+            });
+        });
+    </script>
+}

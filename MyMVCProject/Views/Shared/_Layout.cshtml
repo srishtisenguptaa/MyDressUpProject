@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="~/MyMVCProject.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+  
 
 
 </head>
@@ -34,10 +35,10 @@
                 <div class="collapse navbar-collapse justify-content-between" id="navbarNav">
                     <!-- Center Links -->
                     <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
-                        <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="WomenSection">Women</a></li>
-                        <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Men</a></li>
-                        <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Kids</a></li>
-                        <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Beauty</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="WomenSection">Shirts</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Dresses</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Jeans</a></li>
+                        @* <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Beauty</a></li> *@
                     </ul>
 
                     <!-- Right Side -->
@@ -48,18 +49,21 @@
                                placeholder="Search clothes (e.g. women dress, men jacket)"
                                aria-label="Search" />
 
-                        <a class="btn btn-outline-secondary me-2 d-flex align-items-center"
-                           asp-controller="Home" asp-action="Wishlist">
+                        <a class="btn btn-outline-secondary position-relative me-2 d-flex align-items-center"
+                           asp-controller="Home" asp-action="WishList" id="wishlist-link">
                             <i class="bi bi-heart me-1"></i> Wishlist
-                        </a>
-                        <a class="btn btn-outline-secondary position-relative d-flex align-items-center"
-                           asp-controller="Home" asp-action="Cart">
-                            <i class="bi bi-cart3 me-1"></i> Cart
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                3
+                            <span id="wishlist-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                                  style="font-size: 0.7rem; display: none;">
+                                0
                             </span>
                         </a>
 
+                        <a class="btn btn-outline-secondary position-relative d-flex align-items-center"
+                           asp-controller="Home" asp-action="Cart" id="cart-link">
+                            <i class="bi bi-cart3 me-1"></i> Cart
+                            <span id="cart-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                                  style="font-size: 0.7rem; display: none;">0</span>
+                        </a>
 
                         @{
                             var username = Context.Session.GetString("Username");
@@ -149,6 +153,21 @@
             toggleBtn.style.transform = "rotate(360deg)";
             setTimeout(() => toggleBtn.style.transform = "rotate(0deg)", 400);
         });
+    </script>
+    <script>
+        function updateWishlistCount() {
+            const wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+            const badge = document.getElementById('wishlist-count');
+            if (wishlist.length > 0) {
+                badge.style.display = 'inline-block';
+                badge.textContent = wishlist.length;
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        // Run on every page load
+        document.addEventListener('DOMContentLoaded', updateWishlistCount);
     </script>
 
 

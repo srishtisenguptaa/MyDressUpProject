@@ -21,12 +21,20 @@ namespace MyMVCProject.Controllers
         {
             return View();
         }
+        public IActionResult WishList()
+        {
+            return View();
+        }
         public IActionResult AboutMe()
         {
             return View();
         }
 
         public IActionResult Privacy()
+        {
+            return View();
+        }
+        public IActionResult Cart()
         {
             return View();
         }

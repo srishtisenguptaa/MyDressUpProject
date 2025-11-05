@@ -1,0 +1,67 @@
+﻿@page
+@model MyMVCProject.Views.Home.CartModel
+@{
+}
+@{
+   // ViewData["Title"] = "Cart";
+}
+
+<div class="container mt-5">
+    <h2 class="mb-4 text-center">Your Shopping Cart 🛒</h2>
+    <div id="cart-container" class="row gy-4"></div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const container = document.getElementById('cart-container');
+
+            if (cart.length === 0) {
+                container.innerHTML = `<p class="text-center text-muted">Your cart is empty!</p>`;
+                return;
+            }
+
+            container.innerHTML = cart.map(item => `
+                <div class="col-md-3">
+                    <div class="card shadow-sm h-100">
+                        <img src="${item.src}" class="card-img-top" alt="${item.title}">
+                        <div class="card-body text-center">
+                            <h6 class="card-title">${item.title}</h6>
+                            <p class="card-text">${item.price}</p>
+                            <p class="text-muted">Size: <strong>${item.size}</strong></p>
+                            <button class="btn btn-outline-danger remove-cart" data-src="${item.src}" data-size="${item.size}">
+                                <i class="bi bi-trash"></i> Remove
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Remove from cart
+            container.addEventListener('click', (e) => {
+                const btn = e.target.closest('.remove-cart');
+                if (!btn) return;
+
+                const src = btn.dataset.src;
+                const size = btn.dataset.size;
+
+                let cart = JSON.parse(localStorage.getItem('cart')) || [];
+                cart = cart.filter(x => !(x.src === src && x.size === size));
+                localStorage.setItem('cart', JSON.stringify(cart));
+
+                btn.closest('.col-md-3').remove();
+
+                const badge = document.getElementById('cart-count');
+                if (badge) {
+                    badge.style.display = cart.length > 0 ? 'inline-block' : 'none';
+                    badge.textContent = cart.length;
+                }
+
+                if (cart.length === 0) {
+                    container.innerHTML = `<p class="text-center text-muted">Your cart is empty!</p>`;
+                }
+            });
+        });
+    </script>
+}

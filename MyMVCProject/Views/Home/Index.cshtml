@@ -17,6 +17,7 @@
 }
  *@
 <link rel="stylesheet" href="~/css/Index.css" asp-append-version="true" />
+<base href="~/Images/~" />
 
 <div class="container my-5">
     <h2 class="text-center mb-4 fancy-heading">Discover Your Style ✨</h2>
@@ -35,34 +36,31 @@
         const loading = document.getElementById('loading');
 
         const images = [
-            { src: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80', title: 'Floral Dress', brand: 'Zara', price: '₹1,499', rating: '⭐ 4.5', gender: 'women', type: 'dress' },
-            { src: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=800&q=80', title: 'Denim Jacket', brand: 'Levis', price: '₹2,199', rating: '⭐ 4.7', gender: 'men', type: 'jacket' },
-            { src: 'https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?auto=format&fit=crop&w=800&q=80', title: 'Party Dress', brand: 'Forever21', price: '₹2,499', rating: '⭐ 4.8', gender: 'women', type: 'dress' },
-            { src: 'https://images.unsplash.com/photo-1506812574058-fc75fa93fead?auto=format&fit=crop&w=800&q=80', title: 'Jumpsuit', brand: 'Zudio', price: '₹1,799', rating: '⭐ 4.4', gender: 'women', type: 'jumpsuit' },
-            { src: 'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=800&q=80', title: 'Ethnic Kurta', brand: 'Biba', price: '₹1,299', rating: '⭐ 4.6', gender: 'women', type: 'kurta' },
-            { src: 'https://images.unsplash.com/photo-1507680434567-5739c80be1ac?auto=format&fit=crop&w=800&q=80', title: 'Summer Skirt', brand: 'Vero Moda', price: '₹999', rating: '⭐ 4.3', gender: 'women', type: 'skirt' },
-            { src: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=800&q=80', title: 'Casual Tee', brand: 'H&M', price: '₹799', rating: '⭐ 4.2', gender: 'men', type: 'tshirt' },
-            { src: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=800&q=80', title: 'Casual Tee', brand: 'H&M', price: '₹799', rating: '⭐ 4.2', gender: 'men', type: 'shirt' },
+            { src: 'Lela Rose Pre-Fall 2015 Fashion Show.jpeg', title: 'Floral Dress', price: '₹1,499', rating: '⭐ 4.5', gender: 'women', type: 'dress' },
+            { src: 'A volta do decote ombro a ombro_ 15 looks com a trend.jpeg', title: 'Denim Jeans', price: '₹2,199', rating: '⭐ 4.7', gender: 'women', type: 'Jeans' },
+            { src: 'download (1).jpeg', title: 'Formal Dress', price: '₹2,499', rating: '⭐ 4.8', gender: 'women', type: 'Dress' },
+            { src: 'download (2).jpeg', title: 'Floral Dress', price: '₹1,799', rating: '⭐ 4.4', gender: 'women', type: 'Dress' },
+            { src: 'download.jpeg', title: 'Aline Dress', price: '₹1,299', rating: '⭐ 4.6', gender: 'women', type: 'Dress' },
+            { src: 'Jaeda Shirt _ Chocolate.jpeg', title: 'Brown Shirt', price: '₹999', rating: '⭐ 4.3', gender: 'women', type: 'Shirt' },
+            { src: 'The 7-Piece Jeanne Damas French Capsule Wardrobe.jpeg', title: 'Blue Jeans', price: '₹799', rating: '⭐ 4.2', gender: 'women', type: 'Jeans' },
+            { src: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=800&q=80', title: 'Casual Tee', price: '₹799', rating: '⭐ 4.2', gender: 'women', type: 'Shirt' },
         ];
 
         let index = 0;
         const chunkSize = 20;
         let searchTerm = localStorage.getItem('dressup-search') || '';
 
-                function filterImages() {
+        function filterImages() {
             if (!searchTerm) return images;
-
-            const terms = searchTerm.split(' '); // break into words like ['women', 'skirt']
+            const terms = searchTerm.split(' ');
             return images.filter(item =>
                 terms.every(t =>
                     item.title.toLowerCase().includes(t) ||
-                    item.brand.toLowerCase().includes(t) ||
                     item.gender.toLowerCase().includes(t) ||
                     item.type.toLowerCase().includes(t)
                 )
             );
         }
-
 
         const filtered = filterImages();
 
@@ -75,10 +73,21 @@
                     <img src="${item.src}" alt="${item.title}">
                     <figcaption>
                         <h5>${item.title}</h5>
-                        <p>${item.brand} | ${item.price}</p>
+                        <p>${item.price}</p>
                         <span>${item.rating}</span>
-                    </figcaption>
-                `;
+
+                        <div class="hover-options">
+                            <div class="sizes">
+                                <button class="size">S</button>
+                                <button class="size">M</button>
+                                <button class="size">L</button>
+                            </div>
+                            <div class="actions">
+                                <button class="wishlist-btn"><i class="bi bi-heart"></i></button>
+                                <button class="add-cart">Add to Cart</button>
+                            </div>
+                        </div>
+                    </figcaption>`;
                 gallery.appendChild(fig);
             });
             index += chunkSize;
@@ -87,7 +96,7 @@
 
         loadMore();
 
-        // Auto-load while scrolling
+        // Infinite scroll
         const observer = new IntersectionObserver(entries => {
             if (entries[0].isIntersecting && index < filtered.length) {
                 loading.style.display = "block";
@@ -96,8 +105,107 @@
         });
         observer.observe(loading);
 
-        // Clear the search once used
+        // ========================
+        // ❤️ Wishlist + 🛒 Cart Logic
+        // ========================
+        gallery.addEventListener('click', (e) => {
+            const item = e.target.closest('figure');
+            if (!item) return;
+
+            // ❤️ Wishlist
+            const heart = e.target.closest('.wishlist-btn');
+            if (heart) {
+                heart.classList.toggle('active');
+
+                const img = item.querySelector('img').src;
+                const title = item.querySelector('h5').innerText;
+                const price = item.querySelector('p').innerText;
+
+                let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+                const exists = wishlist.find(x => x.src === img);
+
+                if (exists) {
+                    wishlist = wishlist.filter(x => x.src !== img);
+                    heart.querySelector('i').classList.replace('bi-heart-fill', 'bi-heart');
+                } else {
+                    wishlist.unshift({ src: img, title, price });
+                    heart.querySelector('i').classList.replace('bi-heart', 'bi-heart-fill');
+                }
+
+                localStorage.setItem('wishlist', JSON.stringify(wishlist));
+
+                const badge = document.getElementById('wishlist-count');
+                if (badge) {
+                    badge.style.display = wishlist.length > 0 ? 'inline-block' : 'none';
+                    badge.textContent = wishlist.length;
+                }
+            }
+
+            // 🛒 Add to Cart
+            const addCart = e.target.closest('.add-cart');
+            if (addCart) {
+                const selectedSize = item.querySelector('.size.selected');
+                if (!selectedSize) {
+                    alert("Please select a size before adding to cart.");
+                    return;
+                }
+
+                const img = item.querySelector('img').src;
+                const title = item.querySelector('h5').innerText;
+                const price = item.querySelector('p').innerText;
+                const size = selectedSize.innerText;
+
+                let cart = JSON.parse(localStorage.getItem('cart')) || [];
+                const exists = cart.find(x => x.src === img && x.size === size);
+
+                if (!exists) {
+                    cart.unshift({ src: img, title, price, size });
+                    localStorage.setItem('cart', JSON.stringify(cart));
+                }
+
+                const cartBadge = document.getElementById('cart-count');
+                if (cartBadge) {
+                    cartBadge.style.display = cart.length > 0 ? 'inline-block' : 'none';
+                    cartBadge.textContent = cart.length;
+                }
+
+                addCart.innerText = "Added!";
+                addCart.disabled = true;
+                setTimeout(() => {
+                    addCart.innerText = "Add to Cart";
+                    addCart.disabled = false;
+                }, 1000);
+            }
+
+            // 🔘 Size selection
+            const sizeBtn = e.target.closest('.size');
+            if (sizeBtn) {
+                const allSizes = sizeBtn.parentElement.querySelectorAll('.size');
+                allSizes.forEach(btn => btn.classList.remove('selected'));
+                sizeBtn.classList.add('selected');
+            }
+        });
+
+        // Initialize badge counts on page load
+        window.addEventListener('load', () => {
+            const wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+            const wishlistBadge = document.getElementById('wishlist-count');
+            const cartBadge = document.getElementById('cart-count');
+
+            if (wishlistBadge) {
+                wishlistBadge.style.display = wishlist.length > 0 ? 'inline-block' : 'none';
+                wishlistBadge.textContent = wishlist.length;
+            }
+            if (cartBadge) {
+                cartBadge.style.display = cart.length > 0 ? 'inline-block' : 'none';
+                cartBadge.textContent = cart.length;
+            }
+        });
+
         localStorage.removeItem('dressup-search');
     </script>
 }
+
 
