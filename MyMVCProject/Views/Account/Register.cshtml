@@ -1,0 +1,45 @@
+﻿@model MyMVCProject.Models.User
+@* @model MyMVCProject.Views.Account.RegisterModel
+ *@
+
+@{
+
+    //ViewData["Title"] = "Register";
+}
+
+<div class="container mt-5" style="max-width: 450px;">
+    <h3 class="text-center mb-4">Create an Account</h3>
+    <form asp-controller="Account" asp-action="Register" method="post">
+        <div class="mb-3">
+            <label for="FullName" class="form-label">Full Name</label>
+            <input type="text" class="form-control" id="FullName" name="FullName" required placeholder="Enter your full name" />
+        </div>
+
+        <div class="mb-3">
+            <label for="email" class="form-label">Email address</label>
+            <input type="email" class="form-control" id="email" name="email" required placeholder="example@dressup.com" />
+        </div>
+
+        <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" class="form-control" id="password" name="password" required placeholder="Enter password" />
+        </div>
+
+        <div class="mb-3">
+            <label for="confirmPassword" class="form-label">Confirm Password</label>
+            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required placeholder="Confirm password" />
+        </div>
+
+        <button type="submit" class="btn btn-success w-100">Register</button>
+
+        @if (ViewBag.Error != null)
+        {
+            <p class="text-danger text-center mt-3">@ViewBag.Error</p>
+        }
+
+        @if (ViewBag.Message != null)
+        {
+            <p class="text-success text-center mt-3">@ViewBag.Message</p>
+        }
+    </form>
+</div>
