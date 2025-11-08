@@ -14,15 +14,17 @@ namespace MyMVCProject.Controllers
             _context = context;
         }
 
-       
+
         [HttpPost]
         public async Task<IActionResult> Add([FromBody] WishlistRequest request)
         {
-            var userId = HttpContext.Session.GetInt32("UserId");
-            
+            var userIdClaim = User.FindFirst("UserId")?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId) || userId <= 0)
+            {
+                // User not logged in
+                return Json(new { success = false, redirectToLogin = true, message = "Please log in first." });
+            }
 
-            if (userId == null)
-                return Json(new { success = false, message = "Please log in first." });
             if (request == null)
             {
                 return Json(new { success = false, message = "Request body is null" });
@@ -35,7 +37,7 @@ namespace MyMVCProject.Controllers
             {
                 _context.WishlistItems.Add(new WishListItem
                 {
-                    UserId = userId.Value,
+                    UserId = userId,
                     ProductId = request.ProductId
                 });
 
@@ -45,14 +47,18 @@ namespace MyMVCProject.Controllers
             return Json(new { success = true });
         }
 
+
         [HttpPost]
         public async Task<IActionResult> Remove([FromBody] WishlistRequest request)
         {
-            var userId = HttpContext.Session.GetInt32("UserId");
+            var userIdClaim = User.FindFirst("UserId")?.Value;
+            if (userIdClaim == null) return Json(new { success = false, data = new object[0] });
 
-            if (userId == null)
-                return Json(new { success = false });
+            int userId = int.Parse(userIdClaim);
 
+
+            if (userId <= 0)
+                return Json(new { success = false, message = "Please log in first." });
             var item = await _context.WishlistItems
                 .FirstOrDefaultAsync(w => w.UserId == userId && w.ProductId == request.ProductId);
 
@@ -68,14 +74,14 @@ namespace MyMVCProject.Controllers
         [HttpGet]
         public async Task<IActionResult> GetUserWishlist()
         {
-            var userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null)
+            var userIdString = User.FindFirst("UserId")?.Value;
+            if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
             {
                 return Json(new { success = false, message = "Please log in first." });
             }
 
             var items = await _context.WishlistItems
-                .Where(w => w.UserId == userId)
+                .Where(w => w.UserId == userId) // userId is now int
                 .Join(_context.Products,
                       w => w.ProductId,
                       p => p.ProductId,
@@ -94,6 +100,7 @@ namespace MyMVCProject.Controllers
                 data = items
             });
         }
+
         public class WishlistRequest
         {
             public int ProductId { get; set; }

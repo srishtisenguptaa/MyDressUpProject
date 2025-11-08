@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using MyMVCProject.DataModel;
 using MyMVCProject.Models;
-using System.Linq;
+using System.Security.Claims;
 
 namespace MyMVCProject.Controllers
 {
@@ -15,6 +16,9 @@ namespace MyMVCProject.Controllers
             _context = context;
         }
 
+        // -----------------------------
+        // LOGIN
+        // -----------------------------
         [HttpGet]
         public IActionResult Login()
         {
@@ -22,22 +26,32 @@ namespace MyMVCProject.Controllers
         }
 
         [HttpPost]
-        public IActionResult Login(string email, string password)
+        public async Task<IActionResult> Login(string email, string password)
         {
-            // Check if user exists in database
             var user = _context.Users.FirstOrDefault(u => u.Email == email && u.PasswordHash == password);
 
             if (user != null)
             {
-                // Extract only first name from FullName
-                var firstName = user.FullName.Split(' ')[0];
+                // Create claims
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, user.FullName),
+                    new Claim("UserId", user.UserId.ToString()),
+                    new Claim(ClaimTypes.Email, user.Email)
+                };
 
-                // Save email and first name in session
-                HttpContext.Session.SetString("Email", user.Email);
-                HttpContext.Session.SetString("Username", firstName);
-                HttpContext.Session.SetInt32("UserId", user.UserId);
-                HttpContext.Session.SetString("UserName", user.FullName);
-                HttpContext.Session.SetString("UserEmail", user.Email);
+                var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+                // Sign in with persistent cookie
+                await HttpContext.SignInAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme,
+                    new ClaimsPrincipal(claimsIdentity),
+                    new AuthenticationProperties
+                    {
+                        IsPersistent = true,                      // Persist across browser sessions
+                        ExpiresUtc = DateTimeOffset.UtcNow.AddYears(1) // 1 year expiration
+                    });
+
                 return RedirectToAction("Index", "Home");
             }
 
@@ -45,12 +59,18 @@ namespace MyMVCProject.Controllers
             return View();
         }
 
-        public IActionResult Logout()
+        // -----------------------------
+        // LOGOUT
+        // -----------------------------
+        public async Task<IActionResult> Logout()
         {
-            HttpContext.Session.Clear();
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Index", "Home");
         }
 
+        // -----------------------------
+        // REGISTER
+        // -----------------------------
         [HttpGet]
         public IActionResult Register()
         {
@@ -58,9 +78,7 @@ namespace MyMVCProject.Controllers
         }
 
         [HttpPost]
-        [HttpPost]
-        [HttpPost]
-        public IActionResult Register(string FullName, string email, string password, string confirmPassword)
+        public async Task<IActionResult> Register(string FullName, string email, string password, string confirmPassword)
         {
             if (password != confirmPassword)
             {
@@ -68,7 +86,6 @@ namespace MyMVCProject.Controllers
                 return View();
             }
 
-            // Check if email already exists
             var existingUser = _context.Users.FirstOrDefault(u => u.Email == email);
             if (existingUser != null)
             {
@@ -76,35 +93,37 @@ namespace MyMVCProject.Controllers
                 return View();
             }
 
-            // Create a new User entity (not LoginViewModel)
             var user = new User
             {
                 FullName = FullName,
                 Email = email,
-                PasswordHash = password,  // Later we’ll hash this
+                PasswordHash = password, // TODO: Hash this in real app
                 CreatedAt = DateTime.Now
             };
-            if (user != null)
-            {
-                // Extract only first name from FullName
-                var firstName = user.FullName.Split(' ')[0];
 
-                // Save email and first name in session
-                HttpContext.Session.SetString("Email", user.Email);
-                HttpContext.Session.SetString("Username", firstName);
-            }
-                _context.Users.Add(user);
+            _context.Users.Add(user);
             _context.SaveChanges();
 
+            // Automatically log in the user after registration
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, user.FullName),
+                new Claim("UserId", user.UserId.ToString()),
+                new Claim(ClaimTypes.Email, user.Email)
+            };
 
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
 
-            // Redirect to login after successful registration
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(claimsIdentity),
+                new AuthenticationProperties
+                {
+                    IsPersistent = true,
+                    ExpiresUtc = DateTimeOffset.UtcNow.AddYears(1)
+                });
+
             return RedirectToAction("Index", "Home");
         }
-
-
-
-
-
     }
 }

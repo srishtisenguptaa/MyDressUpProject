@@ -1,5 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using MyMVCProject.DataModel; // ✅ Make sure this matches your actual namespace
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.EntityFrameworkCore;
+using MyMVCProject.DataModel; // ✅ Replace with your actual namespace
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,8 +14,7 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
     });
 
-
-// ✅ Add Session Support (with timeout and cookie setup)
+// Optional: Session (if you need it for other purposes)
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromHours(2);
@@ -22,21 +22,35 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-// ✅ Add HttpContextAccessor (for accessing session in controllers)
+// HttpContextAccessor (for accessing session or other context in controllers)
 builder.Services.AddHttpContextAccessor();
 
-// ✅ Configure Database Connection
+// Database connection
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
 // -------------------------------------------------------
-// 2️⃣ Build Application
+// 2️⃣ Cookie-based Authentication (Persistent Login)
+// -------------------------------------------------------
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Account/Login";   // Redirect here if not logged in
+        options.LogoutPath = "/Account/Logout"; // Redirect here on logout
+        options.ExpireTimeSpan = TimeSpan.FromDays(365); // Persistent for 1 year
+        options.SlidingExpiration = true;      // Extend expiration on activity
+        options.Cookie.HttpOnly = true;
+        options.Cookie.IsEssential = true;
+    });
+
+// -------------------------------------------------------
+// 3️⃣ Build Application
 // -------------------------------------------------------
 var app = builder.Build();
 
 // -------------------------------------------------------
-// 3️⃣ Configure Middleware Pipeline
+// 4️⃣ Middleware Pipeline
 // -------------------------------------------------------
 if (!app.Environment.IsDevelopment())
 {
@@ -47,20 +61,23 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-// ✅ Session must come BEFORE Routing
-app.UseSession();
-
 app.UseRouting();
+
+// Authentication must come before Authorization
+app.UseAuthentication();
 app.UseAuthorization();
 
+// Optional: keep session for other purposes
+app.UseSession();
+
 // -------------------------------------------------------
-// 4️⃣ Route Configuration
+// 5️⃣ Route Configuration
 // -------------------------------------------------------
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 // -------------------------------------------------------
-// 5️⃣ Run the App
+// 6️⃣ Run the App
 // -------------------------------------------------------
 app.Run();

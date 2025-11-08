@@ -13,6 +13,7 @@
 
 
 </head>
+@using System.Security.Claims
 <body>
     <!-- Splash Screen -->
     <div id="splash-screen" class="splash-screen d-flex justify-content-center align-items-center">
@@ -66,10 +67,10 @@
                         </a>
 
                         @{
-                            var username = Context.Session.GetString("Username");
+                            var username = User.Identity.IsAuthenticated ? User.Identity.Name : null;
                         }
 
-                        @if (string.IsNullOrEmpty(username))
+                        @if (!User.Identity.IsAuthenticated)
                         {
                             <a class="btn btn-outline-secondary d-flex align-items-center ms-3"
                                asp-controller="Account" asp-action="Login">
