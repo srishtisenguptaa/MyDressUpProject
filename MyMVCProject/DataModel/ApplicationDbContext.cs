@@ -14,6 +14,9 @@ namespace MyMVCProject.DataModel
         //  Add your tables here
         //public DbSet<LoginViewModel> LoginUsers { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<Product> Products { get; set; }
+        public DbSet<WishListItem> WishlistItems { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

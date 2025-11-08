@@ -13,9 +13,9 @@ namespace MyMVCProject.Controllers
             _logger = logger;
         }
 
-        public IActionResult WomenSection()
+        public PartialViewResult WomenSection()
         {
-            return View();
+            return PartialView();
         }
         public IActionResult Index()
         {

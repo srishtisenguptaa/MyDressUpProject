@@ -35,7 +35,9 @@ namespace MyMVCProject.Controllers
                 // Save email and first name in session
                 HttpContext.Session.SetString("Email", user.Email);
                 HttpContext.Session.SetString("Username", firstName);
-
+                HttpContext.Session.SetInt32("UserId", user.UserId);
+                HttpContext.Session.SetString("UserName", user.FullName);
+                HttpContext.Session.SetString("UserEmail", user.Email);
                 return RedirectToAction("Index", "Home");
             }
 

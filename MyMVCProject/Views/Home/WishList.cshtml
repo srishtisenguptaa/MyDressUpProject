@@ -1,8 +1,5 @@
-﻿@page
-@model MyMVCProject.Views.Home.WishListModel
-
-@{
-    //ViewData["Title"] = "Wishlist";
+﻿@{
+    ViewData["Title"] = "Your Wishlist ❤️";
 }
 
 <div class="container mt-5">
@@ -12,51 +9,61 @@
 
 @section Scripts {
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+        document.addEventListener('DOMContentLoaded', async () => {
             const container = document.getElementById('wishlist-container');
 
-            if (wishlist.length === 0) {
-                container.innerHTML = `<p class="text-center text-muted">Your wishlist is empty!</p>`;
-                return;
-            }
+            try {
+                const response = await fetch('/Wishlist/GetUserWishlist');
+                const result = await response.json();
 
-            container.innerHTML = wishlist.map(item => `
-                <div class="col-md-3">
-                    <div class="card shadow-sm h-100">
-                        <img src="${item.src}" class="card-img-top" alt="${item.title}">
-                        <div class="card-body text-center">
-                            <h6 class="card-title">${item.title}</h6>
-                            <p class="card-text">${item.price}</p>
-                            <button class="btn btn-outline-danger remove-btn" data-src="${item.src}">
-                                <i class="bi bi-trash"></i> Remove
-                            </button>
+                if (!result.success || !result.data || result.data.length === 0) {
+                    container.innerHTML = `<p class="text-center text-muted">Your wishlist is empty!</p>`;
+                    return;
+                }
+
+                container.innerHTML = result.data.map(item => `
+                    <div class="col-md-3">
+                        <div class="card shadow-sm h-100">
+                            <img src="${item.imageUrl}" class="card-img-top" alt="${item.title}">
+                            <div class="card-body text-center">
+                                <h6 class="card-title">${item.title}</h6>
+                                <p class="card-text">₹${item.price}</p>
+                                <button class="btn btn-outline-danger remove-btn" data-id="${item.productId}">
+                                    <i class="bi bi-trash"></i> Remove
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            `).join('');
+                `).join('');
+            } catch (err) {
+                console.error("Failed to load wishlist:", err);
+                container.innerHTML = `<p class="text-center text-danger">Error loading wishlist.</p>`;
+            }
 
             // Remove item from wishlist
-            container.addEventListener('click', (e) => {
+            container.addEventListener('click', async (e) => {
                 const btn = e.target.closest('.remove-btn');
                 if (!btn) return;
 
-                const src = btn.dataset.src;
-                let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
-                wishlist = wishlist.filter(x => x.src !== src);
-                localStorage.setItem('wishlist', JSON.stringify(wishlist));
+                const productId = parseInt(btn.dataset.id);
+                try {
+                    const res = await fetch('/Wishlist/Remove', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ productId })
+                    });
 
-                btn.closest('.col-md-3').remove();
+                    const result = await res.json();
+                    if (result.success) {
+                        btn.closest('.col-md-3').remove();
 
-                // Update badge
-                const badge = document.getElementById('wishlist-count');
-                if (badge) {
-                    badge.style.display = wishlist.length > 0 ? 'inline-block' : 'none';
-                    badge.textContent = wishlist.length;
-                }
-
-                if (wishlist.length === 0) {
-                    container.innerHTML = `<p class="text-center text-muted">Your wishlist is empty!</p>`;
+                        // Check if wishlist is now empty
+                        if (container.querySelectorAll('.col-md-3').length === 0) {
+                            container.innerHTML = `<p class="text-center text-muted">Your wishlist is empty!</p>`;
+                        }
+                    }
+                } catch (err) {
+                    console.error("Failed to remove item:", err);
                 }
             });
         });

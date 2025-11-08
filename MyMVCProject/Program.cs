@@ -1,22 +1,43 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using MyMVCProject.DataModel; //  change this namespace to your actual Data folder namespace
+using MyMVCProject.DataModel; // ✅ Make sure this matches your actual namespace
 
 var builder = WebApplication.CreateBuilder(args);
 
-//  Add connection string from appsettings.json
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+// -------------------------------------------------------
+// 1️⃣ Register Services
+// -------------------------------------------------------
+builder.Services.AddControllersWithViews();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+    });
 
-// Register DbContext for your SQL Server database
+
+// ✅ Add Session Support (with timeout and cookie setup)
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(2);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
+// ✅ Add HttpContextAccessor (for accessing session in controllers)
+builder.Services.AddHttpContextAccessor();
+
+// ✅ Configure Database Connection
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-//  Add services to the container
-builder.Services.AddControllersWithViews();
-builder.Services.AddSession();
-
+// -------------------------------------------------------
+// 2️⃣ Build Application
+// -------------------------------------------------------
 var app = builder.Build();
 
-//  Configure the HTTP request pipeline
+// -------------------------------------------------------
+// 3️⃣ Configure Middleware Pipeline
+// -------------------------------------------------------
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -26,14 +47,20 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+// ✅ Session must come BEFORE Routing
 app.UseSession();
-app.UseRouting();
 
+app.UseRouting();
 app.UseAuthorization();
 
-
+// -------------------------------------------------------
+// 4️⃣ Route Configuration
+// -------------------------------------------------------
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
+// -------------------------------------------------------
+// 5️⃣ Run the App
+// -------------------------------------------------------
 app.Run();

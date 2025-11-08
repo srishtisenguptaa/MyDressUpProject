@@ -35,9 +35,9 @@
                 <div class="collapse navbar-collapse justify-content-between" id="navbarNav">
                     <!-- Center Links -->
                     <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
-                        <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="WomenSection">Shirts</a></li>
+                       @*  <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="WomenSection">Shirts</a></li>
                         <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Dresses</a></li>
-                        <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Jeans</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Jeans</a></li> *@
                         @* <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Beauty</a></li> *@
                     </ul>
 
@@ -155,18 +155,29 @@
         });
     </script>
     <script>
-        function updateWishlistCount() {
-            const wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+         function updateWishlistCount() {
             const badge = document.getElementById('wishlist-count');
-            if (wishlist.length > 0) {
-                badge.style.display = 'inline-block';
-                badge.textContent = wishlist.length;
-            } else {
+            try {
+                const response = await fetch('/Wishlist/GetUserWishlist');
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    const count = result.data.length;
+                    if (count > 0) {
+                        badge.style.display = 'inline-block';
+                        badge.textContent = count;
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                } else {
+                    badge.style.display = 'none';
+                }
+            } catch (err) {
+                console.error("Wishlist count fetch error:", err);
                 badge.style.display = 'none';
             }
         }
 
-        // Run on every page load
         document.addEventListener('DOMContentLoaded', updateWishlistCount);
     </script>
 

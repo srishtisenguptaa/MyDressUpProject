@@ -1,21 +1,7 @@
-﻿@* @{
-    ViewData["Title"] = "DressUp Gallery";
+﻿@{
+    ViewData["Title"] = "Discover Your Style ✨";
 }
 
-<div class="container my-5">
-    <h2 class="text-center mb-4">Let's Play DressUp</h2>
-    <div id="gallery" class="row"></div>
-
-    <div id="loader" class="text-center my-4">
-        <div class="spinner-border text-secondary" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-    </div>
-</div>
-@section Scripts {
-    <script src="~/js/Index.js"></script>
-}
- *@
 <link rel="stylesheet" href="~/css/Index.css" asp-append-version="true" />
 <base href="~/Images/~" />
 
@@ -30,51 +16,39 @@
         </div>
     </div>
 </div>
+
 @section Scripts {
     <script>
         const gallery = document.getElementById('gallery');
         const loading = document.getElementById('loading');
 
-        const images = [
-            { src: 'Lela Rose Pre-Fall 2015 Fashion Show.jpeg', title: 'Floral Dress', price: '₹1,499', rating: '⭐ 4.5', gender: 'women', type: 'dress' },
-            { src: 'A volta do decote ombro a ombro_ 15 looks com a trend.jpeg', title: 'Denim Jeans', price: '₹2,199', rating: '⭐ 4.7', gender: 'women', type: 'Jeans' },
-            { src: 'download (1).jpeg', title: 'Formal Dress', price: '₹2,499', rating: '⭐ 4.8', gender: 'women', type: 'Dress' },
-            { src: 'download (2).jpeg', title: 'Floral Dress', price: '₹1,799', rating: '⭐ 4.4', gender: 'women', type: 'Dress' },
-            { src: 'download.jpeg', title: 'Aline Dress', price: '₹1,299', rating: '⭐ 4.6', gender: 'women', type: 'Dress' },
-            { src: 'Jaeda Shirt _ Chocolate.jpeg', title: 'Brown Shirt', price: '₹999', rating: '⭐ 4.3', gender: 'women', type: 'Shirt' },
-            { src: 'The 7-Piece Jeanne Damas French Capsule Wardrobe.jpeg', title: 'Blue Jeans', price: '₹799', rating: '⭐ 4.2', gender: 'women', type: 'Jeans' },
-            { src: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=800&q=80', title: 'Casual Tee', price: '₹799', rating: '⭐ 4.2', gender: 'women', type: 'Shirt' },
-        ];
-
-        let index = 0;
-        const chunkSize = 20;
-        let searchTerm = localStorage.getItem('dressup-search') || '';
-
-        function filterImages() {
-            if (!searchTerm) return images;
-            const terms = searchTerm.split(' ');
-            return images.filter(item =>
-                terms.every(t =>
-                    item.title.toLowerCase().includes(t) ||
-                    item.gender.toLowerCase().includes(t) ||
-                    item.type.toLowerCase().includes(t)
-                )
-            );
+        async function fetchProducts() {
+            loading.style.display = "block";
+            try {
+                const response = await fetch('/api/product');
+                if (!response.ok) throw new Error("Failed to load products");
+                const products = await response.json();
+                renderProducts(products);
+                await highlightWishlistItems(); // highlight hearts for wishlist items
+            } catch (err) {
+                console.error("Product fetch error:", err);
+            } finally {
+                loading.style.display = "none";
+            }
         }
 
-        const filtered = filterImages();
-
-        function loadMore() {
-            const slice = filtered.slice(index, index + chunkSize);
-            slice.forEach(item => {
+        // Render product cards
+        function renderProducts(products) {
+            gallery.innerHTML = '';
+            products.forEach(item => {
                 const fig = document.createElement('figure');
                 fig.classList.add('item');
                 fig.innerHTML = `
-                    <img src="${item.src}" alt="${item.title}">
+                    <img src="${item.imageUrl}" alt="${item.title}">
                     <figcaption>
                         <h5>${item.title}</h5>
-                        <p>${item.price}</p>
-                        <span>${item.rating}</span>
+                        <p>₹${item.price}</p>
+                        <span>⭐ ${item.rating}</span>
 
                         <div class="hover-options">
                             <div class="sizes">
@@ -83,129 +57,115 @@
                                 <button class="size">L</button>
                             </div>
                             <div class="actions">
-                                <button class="wishlist-btn"><i class="bi bi-heart"></i></button>
+                                <button class="wishlist-btn" data-id="${item.productId}">
+                                    <i class="bi bi-heart"></i>
+                                </button>
                                 <button class="add-cart">Add to Cart</button>
                             </div>
                         </div>
                     </figcaption>`;
                 gallery.appendChild(fig);
             });
-            index += chunkSize;
-            loading.style.display = "none";
         }
 
-        loadMore();
+        // Highlight hearts for wishlist items
+        async function highlightWishlistItems() {
+            try {
+                const response = await fetch('/Wishlist/GetUserWishlist');
+                const result = await response.json();
 
-        // Infinite scroll
-        const observer = new IntersectionObserver(entries => {
-            if (entries[0].isIntersecting && index < filtered.length) {
-                loading.style.display = "block";
-                setTimeout(() => loadMore(), 800);
+                if (result.success && result.data && result.data.length > 0) {
+                    const wishlistIds = result.data.map(w => w.productId);
+                    document.querySelectorAll('.wishlist-btn').forEach(btn => {
+                        const pid = parseInt(btn.dataset.id);
+                        if (wishlistIds.includes(pid)) {
+                            const icon = btn.querySelector('i');
+                            icon.classList.replace('bi-heart', 'bi-heart-fill');
+                            icon.style.color = 'red';
+                        }
+                    });
+                }
+            } catch (err) {
+                console.error("Highlight wishlist error:", err);
             }
-        });
-        observer.observe(loading);
+        }
 
-        // ========================
-        // ❤️ Wishlist + 🛒 Cart Logic
-        // ========================
-        gallery.addEventListener('click', (e) => {
-            const item = e.target.closest('figure');
-            if (!item) return;
+        // Update global wishlist count badge
+        async function updateWishlistCount() {
+            const badge = document.getElementById('wishlist-count');
+            try {
+                const response = await fetch('/Wishlist/GetUserWishlist');
+                const result = await response.json();
 
-            // ❤️ Wishlist
-            const heart = e.target.closest('.wishlist-btn');
-            if (heart) {
-                heart.classList.toggle('active');
-
-                const img = item.querySelector('img').src;
-                const title = item.querySelector('h5').innerText;
-                const price = item.querySelector('p').innerText;
-
-                let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
-                const exists = wishlist.find(x => x.src === img);
-
-                if (exists) {
-                    wishlist = wishlist.filter(x => x.src !== img);
-                    heart.querySelector('i').classList.replace('bi-heart-fill', 'bi-heart');
+                if (result.success && result.data) {
+                    const count = result.data.length;
+                    if (count > 0) {
+                        badge.style.display = 'inline-block';
+                        badge.textContent = count;
+                    } else {
+                        badge.style.display = 'none';
+                    }
                 } else {
-                    wishlist.unshift({ src: img, title, price });
-                    heart.querySelector('i').classList.replace('bi-heart', 'bi-heart-fill');
+                    badge.style.display = 'none';
                 }
-
-                localStorage.setItem('wishlist', JSON.stringify(wishlist));
-
-                const badge = document.getElementById('wishlist-count');
-                if (badge) {
-                    badge.style.display = wishlist.length > 0 ? 'inline-block' : 'none';
-                    badge.textContent = wishlist.length;
-                }
+            } catch (err) {
+                console.error("Wishlist count fetch error:", err);
+                badge.style.display = 'none';
             }
+        }
 
-            // 🛒 Add to Cart
-            const addCart = e.target.closest('.add-cart');
-            if (addCart) {
-                const selectedSize = item.querySelector('.size.selected');
-                if (!selectedSize) {
-                    alert("Please select a size before adding to cart.");
-                    return;
+        // Wishlist button click logic
+        document.addEventListener('click', async (e) => {
+            const btn = e.target.closest('.wishlist-btn');
+            if (!btn) return;
+
+            const icon = btn.querySelector('i');
+            const productId = parseInt(btn.dataset.id);
+
+            try {
+                if (icon.classList.contains('bi-heart')) {
+                    // Add to wishlist
+                    const addRes = await fetch('/Wishlist/Add', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ProductId: productId })
+                    });
+                    const result = await addRes.json();
+
+                    if (!result.success && result.message) {
+                        alert(result.message);
+                        window.location.href = '/Account/Login';
+                        return;
+                    }
+
+                    icon.classList.replace('bi-heart', 'bi-heart-fill');
+                    icon.style.color = 'red';
+                } else {
+                    // Remove from wishlist
+                    const removeRes = await fetch('/Wishlist/Remove', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ProductId: productId })
+                    });
+                    const removeResult = await removeRes.json();
+
+                    if (removeResult.success) {
+                        icon.classList.replace('bi-heart-fill', 'bi-heart');
+                        icon.style.color = '';
+                    }
                 }
 
-                const img = item.querySelector('img').src;
-                const title = item.querySelector('h5').innerText;
-                const price = item.querySelector('p').innerText;
-                const size = selectedSize.innerText;
-
-                let cart = JSON.parse(localStorage.getItem('cart')) || [];
-                const exists = cart.find(x => x.src === img && x.size === size);
-
-                if (!exists) {
-                    cart.unshift({ src: img, title, price, size });
-                    localStorage.setItem('cart', JSON.stringify(cart));
-                }
-
-                const cartBadge = document.getElementById('cart-count');
-                if (cartBadge) {
-                    cartBadge.style.display = cart.length > 0 ? 'inline-block' : 'none';
-                    cartBadge.textContent = cart.length;
-                }
-
-                addCart.innerText = "Added!";
-                addCart.disabled = true;
-                setTimeout(() => {
-                    addCart.innerText = "Add to Cart";
-                    addCart.disabled = false;
-                }, 1000);
-            }
-
-            // 🔘 Size selection
-            const sizeBtn = e.target.closest('.size');
-            if (sizeBtn) {
-                const allSizes = sizeBtn.parentElement.querySelectorAll('.size');
-                allSizes.forEach(btn => btn.classList.remove('selected'));
-                sizeBtn.classList.add('selected');
+                // Update global count
+                await updateWishlistCount();
+            } catch (error) {
+                console.error('Wishlist update error:', error);
             }
         });
 
-        // Initialize badge counts on page load
-        window.addEventListener('load', () => {
-            const wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
-            const cart = JSON.parse(localStorage.getItem('cart')) || [];
-
-            const wishlistBadge = document.getElementById('wishlist-count');
-            const cartBadge = document.getElementById('cart-count');
-
-            if (wishlistBadge) {
-                wishlistBadge.style.display = wishlist.length > 0 ? 'inline-block' : 'none';
-                wishlistBadge.textContent = wishlist.length;
-            }
-            if (cartBadge) {
-                cartBadge.style.display = cart.length > 0 ? 'inline-block' : 'none';
-                cartBadge.textContent = cart.length;
-            }
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', async () => {
+            await fetchProducts();
+            await updateWishlistCount();
         });
-
-        localStorage.removeItem('dressup-search');
     </script>
 }
-
-
