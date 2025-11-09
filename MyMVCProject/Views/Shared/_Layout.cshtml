@@ -48,7 +48,8 @@
                                class="form-control me-2"
                                type="search"
                                placeholder="Search clothes (e.g. women dress, men jacket)"
-                               aria-label="Search" />
+                               aria-label="Search"
+                               autocomplete="on" />
 
                         <a class="btn btn-outline-secondary position-relative me-2 d-flex align-items-center"
                            asp-controller="Home" asp-action="WishList" id="wishlist-link">
@@ -187,6 +188,44 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchForm = document.getElementById('searchForm');
+            const searchInput = document.getElementById('searchInput');
+
+            // Only attach listener if both elements exist
+            if (!searchForm || !searchInput) return;
+
+            // Prevent full page reload and handle Enter key
+            searchForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const query = searchInput.value.trim();
+                if (!query) return;
+
+                // Only handle search if we're on the Index page
+                if (window.location.pathname.toLowerCase() !== '/home/index' &&
+                    window.location.pathname !== '/') {
+                    window.location.href = `/Home/Index?query=${encodeURIComponent(query)}`;
+                    return;
+                }
+
+                const gallery = document.getElementById('gallery');
+                if (!gallery) {
+                    console.error("Gallery element not found on page.");
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/Home/SearchProducts?query=${encodeURIComponent(query)}`);
+                    const html = await response.text();
+                    gallery.innerHTML = html;
+                } catch (err) {
+                    console.error("Search error:", err);
+                }
+            });
+        });
+    </script>
 
 
     @await RenderSectionAsync("Scripts", required: false)

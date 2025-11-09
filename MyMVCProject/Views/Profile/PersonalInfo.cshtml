@@ -31,8 +31,16 @@
                 {
                     <div class="col-md-6">
                         <div class="card p-3 shadow-sm border-0 rounded-4 bg-light position-relative">
-                            <textarea class="form-control border-0 bg-transparent address-textarea"
-                              data-id="@addr.AddressId" readonly>@addr.Address</textarea>
+                            <textarea class="form-control border-0 bg-transparent address-textarea mb-2"
+                              data-id="@addr.AddressId"
+                              readonly>@addr.Address</textarea>
+
+                            <div class="small text-muted">
+                                <strong>Pincode:</strong> @addr.Pincode <br />
+                                <strong>District:</strong> @addr.District <br />
+                                <strong>State:</strong> @addr.State <br />
+                                <strong>Country:</strong> @addr.Country
+                            </div>
 
                             <div class="position-absolute top-0 end-0 mt-2 me-2">
                                 <button class="btn btn-sm btn-outline-primary me-1 edit-btn" data-id="@addr.AddressId" title="Edit">
@@ -55,9 +63,27 @@
         </div>
 
         <div class="mt-5">
-            <h5 class="mb-2">Add a new address</h5>
-            <textarea id="newAddress" class="form-control rounded-3" placeholder="Type your address here..."></textarea>
-            <button id="addAddressBtn" class="btn btn-primary mt-3 px-4">Add Address</button>
+            <h5 class="mb-3">Add a New Address</h5>
+
+            <div class="row g-3">
+                <div class="col-12">
+                    <textarea id="address" class="form-control rounded-3" placeholder="Type your address here..."></textarea>
+                </div>
+                <div class="col-md-4">
+                    <input id="pincode" class="form-control" placeholder="Enter Pincode" maxlength="6" />
+                </div>
+                <div class="col-md-4">
+                    <input id="district" class="form-control" placeholder="District" readonly />
+                </div>
+                <div class="col-md-4">
+                    <input id="state" class="form-control" placeholder="State" readonly />
+                </div>
+                <div class="col-md-4 mt-3">
+                    <input id="country" class="form-control" value="India" readonly />
+                </div>
+            </div>
+
+            <button id="addAddressBtn" class="btn btn-primary mt-4 px-4">Add Address</button>
         </div>
     </div>
 </div>
@@ -66,30 +92,57 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
 
-            // Add Address
-            const addBtn = document.getElementById("addAddressBtn");
-            if (addBtn) {
-                addBtn.addEventListener("click", () => {
-                    const address = document.getElementById("newAddress").value.trim();
-                    if (!address) {
-                        alert("Please enter an address.");
-                        return;
+            // 🔹 Auto-fill District & State on Pincode blur
+            document.getElementById('pincode').addEventListener('blur', async function () {
+                const pin = this.value.trim();
+                if (pin.length === 6) {
+                    const res = await fetch(`https://api.postalpincode.in/pincode/${pin}`);
+                    const data = await res.json();
+                    if (data[0].Status === "Success") {
+                        const po = data[0].PostOffice[0];
+                        document.getElementById('district').value = po.District;
+                        document.getElementById('state').value = po.State;
+                        document.getElementById('country').value = "India";
+                    } else {
+                        alert("Invalid pincode entered!");
+                        document.getElementById('district').value = "";
+                        document.getElementById('state').value = "";
                     }
+                }
+            });
 
-                    fetch('/Profile/AddAddress', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: new URLSearchParams({ address: address })
+            // 🔹 Add New Address
+            document.getElementById("addAddressBtn").addEventListener("click", () => {
+                const address = document.getElementById("address").value.trim();
+                const pincode = document.getElementById("pincode").value.trim();
+                const district = document.getElementById("district").value.trim();
+                const state = document.getElementById("state").value.trim();
+                const country = document.getElementById("country").value.trim();
+
+                if (!address || !pincode) {
+                    alert("Please fill in both address and pincode.");
+                    return;
+                }
+
+                fetch('/Profile/AddAddress', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        Address: address,
+                        Pincode: pincode,
+                        District: district,
+                        State: state,
+                        Country: country
                     })
-                        .then(res => res.json())
-                        .then(data => {
-                            alert(data.message);
-                            if (data.success) location.reload();
-                        });
-                });
-            }
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        alert(data.message);
+                        if (data.success) location.reload();
+                    });
+            });
 
-            // Delete Address
+            // 🔹 Delete Address
             document.querySelectorAll(".delete-btn").forEach(btn => {
                 btn.addEventListener("click", () => {
                     const id = btn.dataset.id;
@@ -108,33 +161,32 @@
                 });
             });
 
-            // Edit Address
-                 // Edit address
-        document.querySelectorAll(".edit-btn").forEach(btn => {
-            btn.addEventListener("click", () => {
-                const id = btn.dataset.id;
-                const textarea = document.querySelector(`textarea[data-id="${id}"]`);
-                const isEditing = !textarea.readOnly;
+            // 🔹 Edit Address
+            document.querySelectorAll(".edit-btn").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const id = btn.dataset.id;
+                    const textarea = document.querySelector(`textarea[data-id="${id}"]`);
+                    const isEditing = !textarea.readOnly;
 
-                if (isEditing) {
-                    const newText = textarea.value.trim();
+                    if (isEditing) {
+                        const newText = textarea.value.trim();
 
-                    fetch('/Profile/EditAddress', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: new URLSearchParams({ id: id, newAddress: newText })
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        alert(data.message);
-                        if (data.success) textarea.readOnly = true;
-                    });
-                } else {
-                    textarea.readOnly = false;
-                    textarea.focus();
-                }
+                        fetch('/Profile/EditAddress', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: new URLSearchParams({ id: id, newAddress: newText })
+                        })
+                            .then(res => res.json())
+                            .then(data => {
+                                alert(data.message);
+                                if (data.success) textarea.readOnly = true;
+                            });
+                    } else {
+                        textarea.readOnly = false;
+                        textarea.focus();
+                    }
+                });
             });
-        });
 
         });
     </script>

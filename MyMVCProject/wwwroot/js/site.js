@@ -14,38 +14,38 @@
     }
 });
 
-document.addEventListener('DOMContentLoaded', function () {
-    const searchInput = document.getElementById('searchInput');
-    const searchForm = document.getElementById('searchForm');
+//document.addEventListener('DOMContentLoaded', function () {
+//    const searchInput = document.getElementById('searchInput');
+//    const searchForm = document.getElementById('searchForm');
 
-    if (searchForm && searchInput) {
+//    if (searchForm && searchInput) {
 
-        // Handle Enter key search (form submit)
-        searchForm.addEventListener('submit', (e) => {
-            e.preventDefault(); // prevent full form reload
+//        // Handle Enter key search (form submit)
+//        searchForm.addEventListener('submit', (e) => {
+//            e.preventDefault(); // prevent full form reload
 
-            const query = searchInput.value.trim().toLowerCase();
+//            const query = searchInput.value.trim().toLowerCase();
 
-            if (query) {
-                // Save the query to localStorage so Index page can read it
-                localStorage.setItem('dressup-search', query);
+//            if (query) {
+//                // Save the query to localStorage so Index page can read it
+//                localStorage.setItem('dressup-search', query);
 
-                // Redirect to Index (or wherever results are displayed)
-                window.location.href = '/Home/Index';
-            }
-        });
+//                // Redirect to Index (or wherever results are displayed)
+//                window.location.href = '/Home/Index';
+//            }
+//        });
 
-        // Optional: add "Enter to search" hint on focus
-        searchInput.addEventListener('focus', () => {
-            searchInput.setAttribute('placeholder', 'Type and press Enter to search...');
-        });
+//        // Optional: add "Enter to search" hint on focus
+//        searchInput.addEventListener('focus', () => {
+//            searchInput.setAttribute('placeholder', 'Type and press Enter to search...');
+//        });
 
-        searchInput.addEventListener('blur', () => {
-            searchInput.setAttribute('placeholder', 'Search clothes (e.g. women dress, men jacket)');
-        });
-    }
+//        searchInput.addEventListener('blur', () => {
+//            searchInput.setAttribute('placeholder', 'Search clothes (e.g. women dress, men jacket)');
+//        });
+//    }
 
-    // Optional: theme toggle or any other global script logic can stay here
-});
+//    // Optional: theme toggle or any other global script logic can stay here
+//});
 
 

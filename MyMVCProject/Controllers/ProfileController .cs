@@ -2,19 +2,17 @@
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using MyMVCProject.DataModel;
+
 public class ProfileController : Controller
 {
     private readonly IConfiguration _configuration;
     private readonly ApplicationDbContext _context;
+
     public ProfileController(IConfiguration configuration, ApplicationDbContext context)
     {
         _configuration = configuration;
-         _context = context;
+        _context = context;
     }
-    //public ProfileController(ApplicationDbContext context)
-    //{
-    //   
-    //}
 
     [HttpGet]
     public IActionResult PersonalInfo()
@@ -31,6 +29,8 @@ public class ProfileController : Controller
         using (SqlConnection con = new SqlConnection(connectionString))
         {
             con.Open();
+
+            // Fetch user details
             SqlCommand cmd = new SqlCommand("SELECT FullName, Email FROM Users WHERE UserId = @UserId", con);
             cmd.Parameters.AddWithValue("@UserId", userId);
             SqlDataReader reader = cmd.ExecuteReader();
@@ -44,8 +44,9 @@ public class ProfileController : Controller
             }
             reader.Close();
 
-            // Get all addresses
-            SqlCommand addressCmd = new SqlCommand("SELECT AddressId, Address FROM UserAddresses WHERE UserId = @UserId", con);
+            // Fetch user addresses with all fields
+            SqlCommand addressCmd = new SqlCommand(
+                "SELECT AddressId, Address, Pincode, District, State, Country FROM UserAddresses WHERE UserId = @UserId", con);
             addressCmd.Parameters.AddWithValue("@UserId", userId);
             SqlDataReader addrReader = addressCmd.ExecuteReader();
 
@@ -55,16 +56,22 @@ public class ProfileController : Controller
                 model.Addresses.Add(new UserAddress
                 {
                     AddressId = (int)addrReader["AddressId"],
-                    Address = addrReader["Address"].ToString()
+                    Address = addrReader["Address"].ToString(),
+                    Pincode = addrReader["Pincode"]?.ToString(),
+                    District = addrReader["District"]?.ToString(),
+                    State = addrReader["State"]?.ToString(),
+                    Country = addrReader["Country"]?.ToString()
                 });
             }
 
+            addrReader.Close();
             return View(model);
         }
     }
 
+    // ✅ Add Address (using LINQ/EF)
     [HttpPost]
-    public IActionResult AddAddress(string address)
+    public IActionResult AddAddress([FromBody] UserAddress model)
     {
         var userIdClaim = User.FindFirst("UserId")?.Value;
         if (userIdClaim == null)
@@ -72,19 +79,44 @@ public class ProfileController : Controller
 
         int userId = int.Parse(userIdClaim);
 
-        string connectionString = _configuration.GetConnectionString("DefaultConnection");
-        using (SqlConnection con = new SqlConnection(connectionString))
+        if (string.IsNullOrWhiteSpace(model.Address))
+            return Json(new { success = false, message = "Address cannot be empty." });
+
+        // Create new address record
+        var newAddress = new UserAddress
         {
-            con.Open();
-            SqlCommand cmd = new SqlCommand("INSERT INTO UserAddresses (UserId, Address) VALUES (@UserId, @Address)", con);
-            cmd.Parameters.AddWithValue("@UserId", userId);
-            cmd.Parameters.AddWithValue("@Address", address);
-            cmd.ExecuteNonQuery();
-        }
+            UserId = userId,
+            Address = model.Address?.Trim(),
+            Pincode = model.Pincode?.Trim(),
+            District = model.District?.Trim(),
+            State = model.State?.Trim(),
+            Country = model.Country?.Trim() ?? "India"
+        };
+
+        _context.UserAddresses.Add(newAddress);
+        _context.SaveChanges();
 
         return Json(new { success = true, message = "Address added successfully!" });
     }
 
+    // ✅ Edit Address (using EF)
+    [HttpPost]
+    public IActionResult EditAddress(int id, string newAddress)
+    {
+        if (string.IsNullOrWhiteSpace(newAddress))
+            return Json(new { success = false, message = "Address cannot be empty." });
+
+        var address = _context.UserAddresses.FirstOrDefault(a => a.AddressId == id);
+        if (address == null)
+            return Json(new { success = false, message = "Address not found." });
+
+        address.Address = newAddress.Trim();
+        _context.SaveChanges();
+
+        return Json(new { success = true, message = "Address updated successfully!" });
+    }
+
+    // ✅ Delete Address
     [HttpPost]
     public IActionResult DeleteAddress(int id)
     {
@@ -97,27 +129,4 @@ public class ProfileController : Controller
 
         return Json(new { success = true, message = "Address deleted successfully!" });
     }
-
-    [HttpPost]
-    [HttpPost]
-    public IActionResult EditAddress(int id, string newAddress)
-    {
-        if (string.IsNullOrWhiteSpace(newAddress))
-            return Json(new { success = false, message = "Address cannot be empty." });
-
-        var address = _context.UserAddresses.FirstOrDefault(a => a.AddressId == id);
-
-        if (address == null)
-            return Json(new { success = false, message = "Address not found." });
-
-        // Update value
-        address.Address = newAddress.Trim();
-
-        // Tell EF to track this entity as modified
-        _context.UserAddresses.Update(address);
-        _context.SaveChanges();
-
-        return Json(new { success = true, message = "Address updated successfully!" });
-    }
-
 }

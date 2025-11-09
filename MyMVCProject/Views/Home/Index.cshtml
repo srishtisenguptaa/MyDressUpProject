@@ -21,15 +21,30 @@
     <script>
         const gallery = document.getElementById('gallery');
         const loading = document.getElementById('loading');
+        const searchForm = document.getElementById('searchForm');
+        const searchInput = document.getElementById('searchInput');
 
-        async function fetchProducts() {
+        
+        async function fetchProducts(query = "") {
             loading.style.display = "block";
             try {
-                const response = await fetch('/api/product');
+                let url = "";
+
+                // if user typed something → call search API
+                if (query && query.trim() !== "") {
+                    url = `/Home/SearchProducts?query=${encodeURIComponent(query)}`;
+                }
+                // else → load all products
+                else {
+                    url = `/api/product`;
+                }
+
+                const response = await fetch(url);
                 if (!response.ok) throw new Error("Failed to load products");
+
                 const products = await response.json();
                 renderProducts(products);
-                await highlightWishlistItems(); // highlight hearts for wishlist items
+                await highlightWishlistItems(); // highlight wishlist hearts
             } catch (err) {
                 console.error("Product fetch error:", err);
             } finally {
@@ -37,9 +52,16 @@
             }
         }
 
-        // Render product cards
+
+        // ✅ Render product cards
         function renderProducts(products) {
             gallery.innerHTML = '';
+
+            if (!products || products.length === 0) {
+                gallery.innerHTML = `<p class="text-center text-muted mt-3">No products found.</p>`;
+                return;
+            }
+
             products.forEach(item => {
                 const fig = document.createElement('figure');
                 fig.classList.add('item');
@@ -49,7 +71,6 @@
                         <h5>${item.title}</h5>
                         <p>₹${item.price}</p>
                         <span>⭐ ${item.rating}</span>
-
                         <div class="hover-options">
                             <div class="sizes">
                                 <button class="size">S</button>
@@ -68,13 +89,13 @@
             });
         }
 
-        // Highlight hearts for wishlist items
+        // ✅ Highlight wishlist hearts
         async function highlightWishlistItems() {
             try {
                 const response = await fetch('/Wishlist/GetUserWishlist');
                 const result = await response.json();
 
-                if (result.success && result.data && result.data.length > 0) {
+                if (result.success && result.data?.length > 0) {
                     const wishlistIds = result.data.map(w => w.productId);
                     document.querySelectorAll('.wishlist-btn').forEach(btn => {
                         const pid = parseInt(btn.dataset.id);
@@ -90,7 +111,7 @@
             }
         }
 
-        // Update global wishlist count badge
+        // ✅ Update wishlist count badge
         async function updateWishlistCount() {
             const badge = document.getElementById('wishlist-count');
             try {
@@ -114,7 +135,7 @@
             }
         }
 
-        // Wishlist button click logic
+        // ✅ Wishlist button toggle
         document.addEventListener('click', async (e) => {
             const btn = e.target.closest('.wishlist-btn');
             if (!btn) return;
@@ -124,7 +145,6 @@
 
             try {
                 if (icon.classList.contains('bi-heart')) {
-                    // Add to wishlist
                     const addRes = await fetch('/Wishlist/Add', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -141,7 +161,6 @@
                     icon.classList.replace('bi-heart', 'bi-heart-fill');
                     icon.style.color = 'red';
                 } else {
-                    // Remove from wishlist
                     const removeRes = await fetch('/Wishlist/Remove', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -155,17 +174,40 @@
                     }
                 }
 
-                // Update global count
                 await updateWishlistCount();
             } catch (error) {
                 console.error('Wishlist update error:', error);
             }
         });
 
-        // Initialize page
-        document.addEventListener('DOMContentLoaded', async () => {
-            await fetchProducts();
+        // ✅ Search form submit (without leaving page)
+               // ✅ Prevent form from reloading page and call our JS function instead
+        if (searchForm && searchInput) {
+            searchForm.addEventListener('submit', async (e) => {
+                e.preventDefault(); // stop normal page reload
+
+                const query = searchInput.value.trim();
+
+                // Update the URL so user sees ?query=term but no reload happens
+                const newUrl = query ? `?query=${encodeURIComponent(query)}` : window.location.pathname;
+                window.history.pushState({}, '', newUrl);
+
+                await fetchProducts(query); // load search results dynamically
+            });
+        }
+
+
+        // ✅ Initial load
+                   document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const query = urlParams.get('query') || "";
+            console.log("Search query from URL:", query);
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) searchInput.value = query;
+
+            await fetchProducts(query); // this will now load filtered products
             await updateWishlistCount();
         });
     </script>
 }
+
