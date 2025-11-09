@@ -1,0 +1,61 @@
+﻿.address-container {
+    max-width: 700px;
+    margin: 50px auto;
+    background: #fff;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+}
+
+.fancy-heading {
+    font-family: 'Poppins', sans-serif;
+    color: #444;
+    margin-bottom: 25px;
+}
+
+.address-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.form-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.address-form input,
+.address-form textarea {
+    flex: 1;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+    .address-form input:focus,
+    .address-form textarea:focus {
+        border-color: #ff6f91;
+    }
+
+textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.btn-save {
+    background: linear-gradient(135deg, #ff758c, #ff7eb3);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 10px 0;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+    .btn-save:hover {
+        background: linear-gradient(135deg, #ff5770, #ff94b3);
+    }

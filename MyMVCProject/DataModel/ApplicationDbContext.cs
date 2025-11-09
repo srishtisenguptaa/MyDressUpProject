@@ -16,15 +16,18 @@ namespace MyMVCProject.DataModel
         public DbSet<User> Users { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<WishListItem> WishlistItems { get; set; }
+        public DbSet<CartItemModel> CartItems { get; set; }
+        public DbSet<UserAddress> UserAddresses { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<UserAddress>()
+        .HasKey(a => a.AddressId); // ✅ Explicitly tell EF the key
+                                   // Ensure EF doesn’t try to map LoginViewModel
+                                   //  modelBuilder.Entity<LoginViewModel>().HasNoKey();
 
-            // Ensure EF doesn’t try to map LoginViewModel
-          //  modelBuilder.Entity<LoginViewModel>().HasNoKey();
-          
 
-    }
+        }
 }
 }
