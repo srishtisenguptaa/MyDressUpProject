@@ -1,0 +1,78 @@
+﻿body {
+    background: #f8f9fa;
+    font-family: 'Playfair Display';
+
+    .login-container {
+    max-width: 380px;
+    margin: 80px auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+}
+
+.brand-logo {
+    text-align: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 600;
+    color: #198754;
+    margin-bottom: 1rem;
+    letter-spacing: 0.5px;
+}
+
+.login-title {
+    text-align: center;
+    font-weight: 500;
+    font-size: 1.3rem;
+    color: #333;
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    font-weight: 500;
+    color: #444;
+    font-size: 0.9rem;
+}
+
+.form-control {
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    font-size: 0.95rem;
+}
+
+    .form-control:focus {
+        border-color: #198754;
+        box-shadow: none;
+    }
+
+.btn-custom {
+    border: none;
+    border-radius: 8px;
+    padding: 10px;
+    font-weight: 500;
+    font-size: 1rem;
+    width: 100%;
+    margin-top: 8px;
+}
+
+.btn-login {
+    background-color: #198754;
+    color: #fff;
+}
+
+.btn-register {
+    background-color: #f0f0f0;
+    color: #198754;
+}
+
+    .btn-register:hover, .btn-login:hover {
+        opacity: 0.9;
+    }
+
+.text-danger {
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-align: center;
+}

@@ -1,26 +1,31 @@
 ﻿@{
     ViewData["Title"] = "Login";
 }
-<p class="text-center mt-3">
-    Don't have an account? <a href="/Account/Register">Sign up</a>
-</p>
+<link rel="stylesheet" href="~/css/loginpage.css" asp-append-version="true" />
+@* 
+<div class="brand-logo">DressUp</div> *@
 
-<div class="container mt-5" style="max-width: 400px;">
-    <h3 class="text-center mb-4">Login</h3>
+<div class="login-container">
+    <h3 class="login-title">Welcome Back 👋</h3>
+
     <form asp-controller="Account" asp-action="Login" method="post">
         <div class="mb-3">
             <label for="email" class="form-label">Email address</label>
-            <input type="email" class="form-control" id="email" name="email" required placeholder="test@dressup.com" />
+            <input type="email" class="form-control" id="email" name="email" required placeholder="you@example.com" />
         </div>
+
         <div class="mb-3">
             <label for="password" class="form-label">Password</label>
             <input type="password" class="form-control" id="password" name="password" required placeholder="Enter password" />
         </div>
-        <button type="submit" class="btn btn-primary w-100">Login</button>
+
+        <button type="submit" class="btn-custom btn-login">Login</button>
+
+        <a href="/Account/Register" class="btn-custom btn-register text-center d-block text-decoration-none">Register</a>
 
         @if (ViewBag.Error != null)
         {
-            <p class="text-danger mt-3 text-center">@ViewBag.Error</p>
+            <p class="text-danger mt-3">@ViewBag.Error</p>
         }
     </form>
 </div>

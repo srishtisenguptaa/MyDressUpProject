@@ -81,7 +81,8 @@ namespace MyMVCProject.Controllers
             }
 
             var items = await _context.WishlistItems
-                .Where(w => w.UserId == userId) // userId is now int
+                .Where(w => w.UserId == userId)
+                .OrderByDescending(w => w.Id) // 👈 sort by WishlistItems.Id descending
                 .Join(_context.Products,
                       w => w.ProductId,
                       p => p.ProductId,
@@ -100,6 +101,7 @@ namespace MyMVCProject.Controllers
                 data = items
             });
         }
+
 
         public class WishlistRequest
         {

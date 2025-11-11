@@ -1,11 +1,13 @@
 ﻿@{
     ViewData["Title"] = "Your Wishlist ❤️";
 }
+<link rel="stylesheet" href="~/css/Wishlist.css" asp-append-version="true" />
 
 <div class="container mt-5">
     <h2 class="mb-4 text-center">Your Wishlist ❤️</h2>
     <div id="wishlist-container" class="row gy-4"></div>
 </div>
+
 
 @section Scripts {
     <script>
@@ -22,15 +24,21 @@
                 }
 
                 container.innerHTML = result.data.map(item => `
-                    <div class="col-md-3">
+                    <div class="col-md-3 col-sm-6">
                         <div class="card shadow-sm h-100">
                             <img src="${item.imageUrl}" class="card-img-top" alt="${item.title}">
                             <div class="card-body text-center">
                                 <h6 class="card-title">${item.title}</h6>
-                                <p class="card-text">₹${item.price}</p>
-                                <button class="btn btn-outline-danger remove-btn" data-id="${item.productId}">
-                                    <i class="bi bi-trash"></i> Remove
-                                </button>
+                                <p class="card-text fw-semibold">₹${item.price}</p>
+                                <div class="divider"></div>
+                                <div class="d-flex justify-content-center gap-2 mt-3">
+                                    <button class="wishlist-btn remove-btn" data-id="${item.productId}">
+                                        <i class="bi bi-trash"></i> Remove
+                                    </button>
+                                    <button class="wishlist-btn move-to-cart-btn" data-id="${item.productId}">
+                                        <i class="bi bi-cart"></i> Move to Cart
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -40,30 +48,57 @@
                 container.innerHTML = `<p class="text-center text-danger">Error loading wishlist.</p>`;
             }
 
-            // Remove item from wishlist
+            // Handle button actions
             container.addEventListener('click', async (e) => {
-                const btn = e.target.closest('.remove-btn');
-                if (!btn) return;
+                const removeBtn = e.target.closest('.remove-btn');
+                const moveBtn = e.target.closest('.move-to-cart-btn');
 
-                const productId = parseInt(btn.dataset.id);
-                try {
-                    const res = await fetch('/Wishlist/Remove', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ productId })
-                    });
+                // Remove button logic
+                if (removeBtn) {
+                    const productId = parseInt(removeBtn.dataset.id);
+                    try {
+                        const res = await fetch('/Wishlist/Remove', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ productId })
+                        });
 
-                    const result = await res.json();
-                    if (result.success) {
-                        btn.closest('.col-md-3').remove();
-
-                        // Check if wishlist is now empty
-                        if (container.querySelectorAll('.col-md-3').length === 0) {
-                            container.innerHTML = `<p class="text-center text-muted">Your wishlist is empty!</p>`;
+                        const result = await res.json();
+                        if (result.success) {
+                            removeBtn.closest('.col-md-3').remove();
+                            if (container.querySelectorAll('.col-md-3').length === 0) {
+                                container.innerHTML = `<p class="text-center text-muted">Your wishlist is empty!</p>`;
+                            }
                         }
+                    } catch (err) {
+                        console.error("Failed to remove item:", err);
                     }
-                } catch (err) {
-                    console.error("Failed to remove item:", err);
+                }
+
+                // Move to Cart button logic
+                if (moveBtn) {
+                    const productId = parseInt(moveBtn.dataset.id);
+                    try {
+                        const res = await fetch('/Cart/Add', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ productId })
+                        });
+
+                        const result = await res.json();
+                        if (result.success) {
+                            alert("Item moved to cart 🛒");
+                            moveBtn.closest('.col-md-3').remove();
+
+                            if (container.querySelectorAll('.col-md-3').length === 0) {
+                                container.innerHTML = `<p class="text-center text-muted">Your wishlist is empty!</p>`;
+                            }
+                        } else {
+                            alert(result.message || "Failed to move item to cart.");
+                        }
+                    } catch (err) {
+                        console.error("Failed to move item to cart:", err);
+                    }
                 }
             });
         });

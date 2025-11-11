@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MyMVCProject.Models;
+using PlayDressUp.Models;
 
 namespace MyMVCProject.DataModel
 {
@@ -16,8 +17,9 @@ namespace MyMVCProject.DataModel
         public DbSet<User> Users { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<WishListItem> WishlistItems { get; set; }
-        public DbSet<CartItemModel> CartItems { get; set; }
+        public DbSet<CartItem> CartItems { get; set; }
         public DbSet<UserAddress> UserAddresses { get; set; }
+        public DbSet<SelectedSize> SelectedSizes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

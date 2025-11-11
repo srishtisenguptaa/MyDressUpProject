@@ -1,0 +1,104 @@
+﻿/* 🌸 Full-page Layout Setup */
+html, body {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa;
+    font-family: "Poppins", sans-serif;
+}
+
+/* 🌆 Container for Cards (make sure your view uses .container or .row) */
+.container, .row {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0 20px; /* small side padding for breathing room */
+    box-sizing: border-box;
+}
+
+/* 🛍️ Card Design */
+.card {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    border: none;
+    border-radius: 0;
+    overflow: hidden;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    background-color: #fff;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* 📸 Product Image */
+.card-img-top {
+    height: 300px; /* slightly larger */
+    width: 100%;
+    object-fit: contain;
+    background-color: #f8f9fa;
+    padding: 10px;
+}
+
+/* 📦 Card Body */
+.card-body {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1rem;
+    box-sizing: border-box;
+}
+
+    /* 💸 Product Price */
+    .card-body .card-text {
+        margin-bottom: 0.4rem;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    /* ➖ Divider line */
+    .card-body .divider {
+        border-top: 1px solid #d3d3d3;
+        margin: 8px 0;
+    }
+
+/* 🧤 Buttons */
+.wishlist-btn {
+    font-size: 0.8rem;
+    padding: 4px 8px;
+    border: none;
+    border-radius: 6px;
+    transition: none;
+}
+
+/* ❌ Remove button */
+.remove-btn {
+    background-color: #dc3545; /* Red */
+    color: white;
+}
+
+/* 🛒 Move to Cart button */
+.move-to-cart-btn {
+    background-color: #198754; /* Green */
+    color: white;
+}
+
+/* 🧱 Ensure Grid Layout fills page */
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+}
+
+/* 🧍 Each card takes equal space */
+.col-md-3, .col-sm-6 {
+    flex: 1 1 250px; /* responsive resizing */
+    max-width: 300px;
+}
+
+/* Optional: add a little breathing space at bottom */
+body {
+    padding-bottom: 40px;
+}

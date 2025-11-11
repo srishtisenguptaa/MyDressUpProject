@@ -1,66 +1,62 @@
-﻿@page
-@model MyMVCProject.Views.Home.CartModel
-@{
-}
-@{
-   // ViewData["Title"] = "Cart";
+﻿@{
+    ViewData["Title"] = "Your Cart 🛒";
 }
 
 <div class="container mt-5">
-    <h2 class="mb-4 text-center">Your Shopping Cart 🛒</h2>
+    <h2 class="mb-4 text-center">Your Cart 🛍️</h2>
+
     <div id="cart-container" class="row gy-4"></div>
+
+    @* <div id="cart-summary" class="mt-4 p-3 rounded shadow-sm bg-light text-center">
+        <div id="selected-address" class="mb-3">
+            <strong>Deliver To:</strong>
+            <p id="address-text">No address selected.</p>
+            <button class="btn btn-outline-dark btn-sm">Change Address</button>
+        </div>
+        <h5>Total: ₹<span id="total-price">0</span></h5>
+        <button class="btn btn-dark mt-2" id="proceed-btn">Proceed to Buy</button>
+    </div> *@
 </div>
 
 @section Scripts {
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        document.addEventListener('DOMContentLoaded', async () => {
             const container = document.getElementById('cart-container');
+            const totalPriceElem = document.getElementById('total-price');
 
-            if (cart.length === 0) {
-                container.innerHTML = `<p class="text-center text-muted">Your cart is empty!</p>`;
-                return;
+            try {
+                const res = await fetch('/Cart/GetUserCart');
+                const result = await res.json();
+
+                if (!result.success || !result.data.length) {
+                    container.innerHTML = `<p class="text-center text-muted">Your cart is empty!</p>`;
+                    return;
+                }
+
+                let total = 0;
+                container.innerHTML = result.data.map(item => {
+                    total += item.price * item.quantity;
+                    return `
+                        <div class="col-md-4">
+                            <div class="card h-100 shadow-sm">
+                                <img src="${item.imageUrl}" class="card-img-top" alt="${item.title}">
+                                <div class="card-body text-center">
+                                    <h6>${item.title}</h6>
+                                    <p>Size: ${item.size}</p>
+                                    <p>₹${item.price} × ${item.quantity}</p>
+                                </div>
+                            </div>
+                        </div>`;
+                }).join('');
+
+                totalPriceElem.textContent = total.toFixed(2);
+            } catch (err) {
+                console.error("Cart load error:", err);
+                container.innerHTML = `<p class="text-center text-danger">Failed to load cart.</p>`;
             }
 
-            container.innerHTML = cart.map(item => `
-                <div class="col-md-3">
-                    <div class="card shadow-sm h-100">
-                        <img src="${item.src}" class="card-img-top" alt="${item.title}">
-                        <div class="card-body text-center">
-                            <h6 class="card-title">${item.title}</h6>
-                            <p class="card-text">${item.price}</p>
-                            <p class="text-muted">Size: <strong>${item.size}</strong></p>
-                            <button class="btn btn-outline-danger remove-cart" data-src="${item.src}" data-size="${item.size}">
-                                <i class="bi bi-trash"></i> Remove
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-
-            // Remove from cart
-            container.addEventListener('click', (e) => {
-                const btn = e.target.closest('.remove-cart');
-                if (!btn) return;
-
-                const src = btn.dataset.src;
-                const size = btn.dataset.size;
-
-                let cart = JSON.parse(localStorage.getItem('cart')) || [];
-                cart = cart.filter(x => !(x.src === src && x.size === size));
-                localStorage.setItem('cart', JSON.stringify(cart));
-
-                btn.closest('.col-md-3').remove();
-
-                const badge = document.getElementById('cart-count');
-                if (badge) {
-                    badge.style.display = cart.length > 0 ? 'inline-block' : 'none';
-                    badge.textContent = cart.length;
-                }
-
-                if (cart.length === 0) {
-                    container.innerHTML = `<p class="text-center text-muted">Your cart is empty!</p>`;
-                }
+            document.getElementById('proceed-btn').addEventListener('click', () => {
+                window.location.href = '/Checkout'; // or /Order/Confirm
             });
         });
     </script>
