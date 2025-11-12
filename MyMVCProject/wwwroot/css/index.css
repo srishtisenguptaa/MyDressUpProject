@@ -428,3 +428,78 @@ html, body {
         gap: 0.8rem;
     }
 }
+/* 🌼 Clean Filter & Sort Buttons */
+.filter-dropdown .btn,
+.sort-dropdown .btn {
+    border: 1px solid #ccc;
+    background: transparent;
+    color: #333;
+    font-size: 0.9rem;
+    padding: 5px 10px;
+    border-radius: 20px;
+    box-shadow: none;
+    transition: all 0.25s ease;
+}
+
+    .filter-dropdown .btn:hover,
+    .sort-dropdown .btn:hover {
+        border-color: #ff8fa3;
+        color: #ff4081;
+        background: rgba(255, 143, 163, 0.1);
+    }
+
+/* 🌸 Remove background from heading bar */
+.heading-bar {
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0.5rem 1rem;
+}
+
+/* 🌿 Sleek Dropdown Styling */
+.modern-dropdown {
+    border: 1px solid #eee;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    padding: 0.4rem 0;
+    transform-origin: top;
+    animation: dropdownSlide 0.25s ease;
+}
+
+/* Smooth slide-down animation */
+@keyframes dropdownSlide {
+    from {
+        opacity: 0;
+        transform: translateY(-5px) scaleY(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scaleY(1);
+    }
+}
+
+/* 💎 Dropdown item hover effect */
+.modern-dropdown .dropdown-item {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    transition: all 0.2s;
+}
+
+    .modern-dropdown .dropdown-item:hover {
+        background-color: #ffeef4;
+        color: #ff4081;
+    }
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .filter-dropdown .btn,
+    .sort-dropdown .btn {
+        font-size: 0.85rem;
+        padding: 4px 8px;
+    }
+}
+.dropdown-item.active {
+    background-color: #ffeef4;
+    color: #ff4081;
+    font-weight: 600;
+}

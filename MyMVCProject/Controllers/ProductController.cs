@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-
+using Microsoft.EntityFrameworkCore;
 using MyMVCProject.DataModel;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace MyMVCProject.Controllers
 {
@@ -23,6 +24,16 @@ namespace MyMVCProject.Controllers
             return Ok(products);
         }
 
+        // ✅ FIXED ENDPOINT (no duplicate "api/product")
+        [HttpGet("categories")]
+        public async Task<IActionResult> GetDistinctCategories()
+        {
+            var categories = await _context.Products
+                .Select(p => p.Type)
+                .Distinct()
+                .ToListAsync();
 
+            return Ok(categories);
+        }
     }
 }

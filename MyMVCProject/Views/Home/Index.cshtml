@@ -33,14 +33,14 @@
             <button class="btn btn-outline-dark dropdown-toggle shadow-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="bi bi-funnel"></i> Filter
             </button>
-            <ul class="dropdown-menu modern-dropdown">
+            <ul class="dropdown-menu modern-dropdown" id="filterMenu">
                 <li><h6 class="dropdown-header text-muted">Categories</h6></li>
-                <li><a class="dropdown-item" href="#">Dresses</a></li>
-                <li><a class="dropdown-item" href="#">Tops</a></li>
-                <li><a class="dropdown-item" href="#">Jeans</a></li>
-                <li><a class="dropdown-item" href="#">Winter Wear</a></li>
+                <li><a class="dropdown-item filter-option" data-category="Dresses">Dresses</a></li>
+                <li><a class="dropdown-item filter-option" data-category="Tops">Tops</a></li>
+                <li><a class="dropdown-item filter-option" data-category="Jeans">Jeans</a></li>
+                <li><a class="dropdown-item filter-option" data-category="Winter Wear">Winter Wear</a></li>
                 <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item text-danger fw-semibold" href="#">Clear Filters</a></li>
+                <li><a class="dropdown-item text-danger fw-semibold clear-filters" href="#">Clear Filters</a></li>
             </ul>
         </div>
 
@@ -54,12 +54,12 @@
             <button class="btn btn-outline-dark dropdown-toggle shadow-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="bi bi-sort-down"></i> Sort
             </button>
-            <ul class="dropdown-menu dropdown-menu-end modern-dropdown">
+            <ul class="dropdown-menu dropdown-menu-end modern-dropdown" id="sortMenu">
                 <li><h6 class="dropdown-header text-muted">Sort By</h6></li>
-                <li><a class="dropdown-item" href="#">Price: Low to High</a></li>
-                <li><a class="dropdown-item" href="#">Price: High to Low</a></li>
-                <li><a class="dropdown-item" href="#">Rating</a></li>
-                <li><a class="dropdown-item" href="#">Newest Arrivals</a></li>
+                <li><a class="dropdown-item sort-option" data-sort="low">Price: Low to High</a></li>
+                <li><a class="dropdown-item sort-option" data-sort="high">Price: High to Low</a></li>
+                <li><a class="dropdown-item sort-option" data-sort="rating">Rating</a></li>
+                <li><a class="dropdown-item sort-option" data-sort="newest">Newest Arrivals</a></li>
             </ul>
         </div>
     </div>
@@ -80,34 +80,64 @@
         const searchForm = document.getElementById('searchForm');
         const searchInput = document.getElementById('searchInput');
 
-        
-        async function fetchProducts(query = "") {
-            loading.style.display = "block";
-            try {
-                let url = "";
+        let selectedCategory = "";
+        let selectedSort = "";
+        let allProducts = []; // ✅ Keep all fetched products in memory
 
-                // if user typed something → call search API
+        // ✅ Fetch all products (and cache them once)
+        async function fetchProducts(query = "") {
+            try {
+                if (loading) loading.style.display = "block";
+
+                let url = "";
                 if (query && query.trim() !== "") {
                     url = `/Home/SearchProducts?query=${encodeURIComponent(query)}`;
-                }
-                // else → load all products
-                else {
+                } else {
                     url = `/api/product`;
                 }
 
                 const response = await fetch(url);
                 if (!response.ok) throw new Error("Failed to load products");
 
-                const products = await response.json();
-                renderProducts(products);
-                await highlightWishlistItems(); // highlight wishlist hearts
+                allProducts = await response.json();
+                console.log("✅ All products fetched:", allProducts);
+
+                applyFiltersAndRender(); // ✅ Always apply filters and sorting before render
+
             } catch (err) {
-                console.error("Product fetch error:", err);
+                console.error("❌ Product fetch error:", err);
+                gallery.innerHTML = `<p class='text-danger text-center mt-4'>Failed to load products.</p>`;
             } finally {
-                loading.style.display = "none";
+                if (loading) loading.style.display = "none";
             }
         }
 
+        // ✅ Apply filtering + sorting + render in one place
+        function applyFiltersAndRender() {
+            let filtered = [...allProducts];
+
+            // --- Apply Category Filter ---
+            if (selectedCategory) {
+                filtered = filtered.filter(p =>
+                    p.category?.toLowerCase() === selectedCategory.toLowerCase()
+                );
+            }
+
+            // --- Apply Sorting ---
+            if (selectedSort === "low") {
+                filtered.sort((a, b) => a.price - b.price);
+            } else if (selectedSort === "high") {
+                filtered.sort((a, b) => b.price - a.price);
+            } else if (selectedSort === "rating") {
+                filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+            } else if (selectedSort === "newest") {
+                filtered.sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded));
+            }
+
+            console.log("🎯 After filter/sort:", filtered);
+            renderProducts(filtered);
+            highlightWishlistItems();
+        }
 
         // ✅ Render product cards
         function renderProducts(products) {
@@ -126,7 +156,7 @@
                     <figcaption>
                         <h5>${item.title}</h5>
                         <p>₹${item.price}</p>
-                        <span>⭐ ${item.rating}</span>
+                        <span>⭐ ${item.rating || "N/A"}</span>
                         <div class="hover-options">
                             <div class="sizes">
                                 <button class="size">S</button>
@@ -137,7 +167,7 @@
                                 <button class="wishlist-btn" data-id="${item.productId}">
                                     <i class="bi bi-heart"></i>
                                 </button>
-                                <button class="add-cart">Add to Cart</button>
+                                <button class="add-cart" data-id="${item.productId}">Add to Cart</button>
                             </div>
                         </div>
                     </figcaption>`;
@@ -167,31 +197,26 @@
             }
         }
 
-        // ✅ Update wishlist count badge
+        // ✅ Wishlist count updater (unchanged)
         async function updateWishlistCount() {
             const badge = document.getElementById('wishlist-count');
             try {
                 const response = await fetch('/Wishlist/GetUserWishlist');
                 const result = await response.json();
+                const count = result.success && result.data ? result.data.length : 0;
 
-                if (result.success && result.data) {
-                    const count = result.data.length;
-                    if (count > 0) {
-                        badge.style.display = 'inline-block';
-                        badge.textContent = count;
-                    } else {
-                        badge.style.display = 'none';
-                    }
+                if (count > 0) {
+                    badge.style.display = 'inline-block';
+                    badge.textContent = count;
                 } else {
                     badge.style.display = 'none';
                 }
-            } catch (err) {
-                console.error("Wishlist count fetch error:", err);
+            } catch {
                 badge.style.display = 'none';
             }
         }
 
-        // ✅ Wishlist button toggle
+        // ✅ Wishlist button toggle (unchanged)
         document.addEventListener('click', async (e) => {
             const btn = e.target.closest('.wishlist-btn');
             if (!btn) return;
@@ -207,13 +232,11 @@
                         body: JSON.stringify({ ProductId: productId })
                     });
                     const result = await addRes.json();
-
                     if (!result.success && result.message) {
                         alert(result.message);
                         window.location.href = '/Account/Login';
                         return;
                     }
-
                     icon.classList.replace('bi-heart', 'bi-heart-fill');
                     icon.style.color = 'red';
                 } else {
@@ -223,7 +246,6 @@
                         body: JSON.stringify({ ProductId: productId })
                     });
                     const removeResult = await removeRes.json();
-
                     if (removeResult.success) {
                         icon.classList.replace('bi-heart-fill', 'bi-heart');
                         icon.style.color = '';
@@ -236,86 +258,61 @@
             }
         });
 
-        // ✅ Search form submit (without leaving page)
-               // ✅ Prevent form from reloading page and call our JS function instead
+        // ✅ Search without reload
         if (searchForm && searchInput) {
             searchForm.addEventListener('submit', async (e) => {
-                e.preventDefault(); // stop normal page reload
-
+                e.preventDefault();
                 const query = searchInput.value.trim();
-
-                // Update the URL so user sees ?query=term but no reload happens
                 const newUrl = query ? `?query=${encodeURIComponent(query)}` : window.location.pathname;
                 window.history.pushState({}, '', newUrl);
-
-                await fetchProducts(query); // load search results dynamically
+                await fetchProducts(query);
             });
         }
 
+        // ✅ FILTER HANDLER
+        document.addEventListener("click", (e) => {
+            const filterOption = e.target.closest(".filter-option");
+            const clearFilter = e.target.closest(".clear-filters");
+
+            if (filterOption) {
+                selectedCategory = filterOption.dataset.category;
+                console.log("✅ Selected category:", selectedCategory);
+                document.querySelectorAll(".filter-option").forEach(el => el.classList.remove("active"));
+                filterOption.classList.add("active");
+                applyFiltersAndRender(); // ✅ no refetch, just re-render
+            }
+
+            if (clearFilter) {
+                selectedCategory = "";
+                console.log("🧹 Filters cleared");
+                document.querySelectorAll(".filter-option").forEach(el => el.classList.remove("active"));
+                applyFiltersAndRender();
+            }
+        });
+
+        // ✅ SORT HANDLER
+        document.addEventListener("click", (e) => {
+            const sortOption = e.target.closest(".sort-option");
+
+            if (sortOption) {
+                selectedSort = sortOption.dataset.sort;
+                console.log("✅ Selected sort:", selectedSort);
+                document.querySelectorAll(".sort-option").forEach(el => el.classList.remove("active"));
+                sortOption.classList.add("active");
+                applyFiltersAndRender();
+            }
+        });
 
         // ✅ Initial load
-                   document.addEventListener('DOMContentLoaded', async () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
             const query = urlParams.get('query') || "";
-            console.log("Search query from URL:", query);
-            const searchInput = document.getElementById('searchInput');
             if (searchInput) searchInput.value = query;
-
-            await fetchProducts(query); // this will now load filtered products
+            await fetchProducts(query);
             await updateWishlistCount();
         });
-
-                let selectedProductId = null;
-        let fromWishlist = false;
-
-        // Open modal when user clicks Add to Cart / Move to Cart
-        document.addEventListener('click', (e) => {
-            const addBtn = e.target.closest('.add-cart');
-            const moveBtn = e.target.closest('.move-to-cart-btn');
-            if (!addBtn && !moveBtn) return;
-
-            selectedProductId = parseInt((addBtn || moveBtn).dataset.id);
-            fromWishlist = !!moveBtn;
-
-            const modal = new bootstrap.Modal(document.getElementById('sizeModal'));
-            modal.show();
-        });
-
-        // Handle size selection
-        document.querySelectorAll('.size-option').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                const size = btn.dataset.size;
-
-                try {
-                    const response = await fetch('/Cart/Add', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ ProductId: selectedProductId, Size: size })
-                    });
-                    const result = await response.json();
-
-                    if (result.success) {
-                        alert('Added to cart 🛒');
-                        if (fromWishlist) {
-                            await fetch('/Wishlist/Remove', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ ProductId: selectedProductId })
-                            });
-                        }
-                    } else {
-                        alert(result.message || 'Failed to add item.');
-                    }
-                } catch (err) {
-                    console.error("Add to cart error:", err);
-                }
-
-                const modal = bootstrap.Modal.getInstance(document.getElementById('sizeModal'));
-                modal.hide();
-            });
-        });
-
     </script>
+
   
 <script>
     let selectedProductId = null;
