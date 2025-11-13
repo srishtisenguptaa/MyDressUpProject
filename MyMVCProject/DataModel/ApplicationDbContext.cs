@@ -20,6 +20,7 @@ namespace MyMVCProject.DataModel
         public DbSet<CartItem> CartItems { get; set; }
         public DbSet<UserAddress> UserAddresses { get; set; }
         public DbSet<SelectedSize> SelectedSizes { get; set; }
+        public DbSet<OtpVerification> OtpVerifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

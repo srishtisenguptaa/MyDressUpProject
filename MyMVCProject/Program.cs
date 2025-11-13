@@ -1,83 +1,60 @@
 ﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using MyMVCProject.DataModel; // ✅ Replace with your actual namespace
+using Microsoft.IdentityModel.Tokens;
+using MyMVCProject.DataModel;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// -------------------------------------------------------
-// 1️⃣ Register Services
-// -------------------------------------------------------
+// ----------------- Basic MVC & DB setup (unchanged)
 builder.Services.AddControllersWithViews();
-builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
-    });
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Optional: Session (if you need it for other purposes)
-builder.Services.AddSession(options =>
+// ----------------- Add Cookie Authentication (for web)
+builder.Services.AddAuthentication(options =>
 {
-    options.IdleTimeout = TimeSpan.FromHours(2);
-    options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
+    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+})
+.AddCookie(options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.LogoutPath = "/Account/Logout";
+    options.ExpireTimeSpan = TimeSpan.FromDays(365);
+    options.SlidingExpiration = true;
+})
+// ----------------- Add JWT Authentication (for API/OTP)
+.AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+    };
 });
 
-// HttpContextAccessor (for accessing session or other context in controllers)
-builder.Services.AddHttpContextAccessor();
+builder.Services.AddAuthorization();
+builder.Services.AddSession();
 
-// Database connection
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
-
-// -------------------------------------------------------
-// 2️⃣ Cookie-based Authentication (Persistent Login)
-// -------------------------------------------------------
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
-    {
-        options.LoginPath = "/Account/Login";   // Redirect here if not logged in
-        options.LogoutPath = "/Account/Logout"; // Redirect here on logout
-        options.ExpireTimeSpan = TimeSpan.FromDays(365); // Persistent for 1 year
-        options.SlidingExpiration = true;      // Extend expiration on activity
-        options.Cookie.HttpOnly = true;
-        options.Cookie.IsEssential = true;
-    });
-
-// -------------------------------------------------------
-// 3️⃣ Build Application
-// -------------------------------------------------------
 var app = builder.Build();
-
-// -------------------------------------------------------
-// 4️⃣ Middleware Pipeline
-// -------------------------------------------------------
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
-}
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
 
-// Authentication must come before Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Optional: keep session for other purposes
 app.UseSession();
 
-// -------------------------------------------------------
-// 5️⃣ Route Configuration
-// -------------------------------------------------------
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-// -------------------------------------------------------
-// 6️⃣ Run the App
-// -------------------------------------------------------
 app.Run();
