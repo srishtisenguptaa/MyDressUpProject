@@ -57,31 +57,40 @@ Recruiters love seeing **complete, polished projects**—DressUp delivers that.
 
 ---
 
-## 📸 **Screenshots (Add Yours Here)**
+## 📸 **Screenshots **
 
 ### 🏠 **Home Page UI**
 
-*Add screenshot path here*
+MyMVCProject/wwwroot/Images/HomePage.png
 
-### 👗 **Product Gallery**
+###  🧭 ** Navbar Layout **
+MyMVCProject/wwwroot/Images/NavBar.png
 
-*Add screenshot path here*
+### 🛍️ ** Product Info Page **
 
-### 🎯 **Filtering & Sorting Panel**
+MyMVCProject/wwwroot/Images/ProductInfo.png
 
-*Add screenshot path here*
+### 👤 ** Personal Info / Profile Section **
+
+MyMVCProject/wwwroot/Images/PersonalInfo.png
+
+### 🔎 ** Search Bar UI **
+
+MyMVCProject/wwwroot/Images/SerachBar.png
 
 ### ❤️ **Wishlist Page**
 
-*Add screenshot path here*
+MyMVCProject/wwwroot/Images/WishListPage.png
 
 ### 🛒 **Cart Page**
 
-*Add screenshot path here*
+MyMVCProject/wwwroot/Images/CartPage.png
 
 ### 🔐 **Login / Register Page**
 
-*Add screenshot path here*
+MyMVCProject/wwwroot/Images/RegisterPage.png
+MyMVCProject/wwwroot/Images/LoginWithPswd.png
+MyMVCProject/wwwroot/Images/LoginWithOTP.png
 
 ---
 
