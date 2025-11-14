@@ -503,3 +503,7 @@ html, body {
     color: #ff4081;
     font-weight: 600;
 }
+.size.selected {
+    background: black !important;
+    color: white !important;
+}

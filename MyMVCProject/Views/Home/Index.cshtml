@@ -29,7 +29,7 @@
 <div class="container my-5">
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap text-center position-relative heading-bar">
         <!-- Left: Filter Dropdown -->
-        <div class="dropdown filter-dropdown">
+       @*  <div class="dropdown filter-dropdown">
             <button class="btn btn-outline-dark dropdown-toggle shadow-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="bi bi-funnel"></i> Filter
             </button>
@@ -42,7 +42,7 @@
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item text-danger fw-semibold clear-filters" href="#">Clear Filters</a></li>
             </ul>
-        </div>
+        </div> *@
 
         <!-- Center: Title -->
         <h2 class="fancy-heading mb-0 flex-grow-1 text-center">
@@ -159,10 +159,11 @@
                         <span>⭐ ${item.rating || "N/A"}</span>
                         <div class="hover-options">
                             <div class="sizes">
-                                <button class="size">S</button>
-                                <button class="size">M</button>
-                                <button class="size">L</button>
+                                <button class="size" data-size="S">S</button>
+                                <button class="size" data-size="M">M</button>
+                                <button class="size" data-size="L">L</button>
                             </div>
+
                             <div class="actions">
                                 <button class="wishlist-btn" data-id="${item.productId}">
                                     <i class="bi bi-heart"></i>
@@ -311,89 +312,91 @@
             await fetchProducts(query);
             await updateWishlistCount();
         });
-    </script>
 
-  
-<script>
-    let selectedProductId = null;
-    let selectedSize = null;
+                // Size selection highlight
+           document.addEventListener("click", (e) => {
+            const sizeBtn = e.target.closest(".size");
+            if (!sizeBtn) return;
 
-    // 🎯 When user clicks "Add to Cart" button
-    document.addEventListener('click', function (e) {
-        const addBtn = e.target.closest('.add-cart');
-        if (!addBtn) return;
+            const parent = sizeBtn.closest(".sizes");
+            if (!parent) return;
 
-        // Store the product ID from button data
-        selectedProductId = parseInt(addBtn.closest('figure').querySelector('.wishlist-btn').dataset.id);
+            parent.querySelectorAll(".size").forEach(b => b.classList.remove("selected"));
+            sizeBtn.classList.add("selected");
+        });
 
-        // Show size selection modal
-        const sizeModal = new bootstrap.Modal(document.getElementById('sizeModal'));
-        sizeModal.show();
-    });
+        // Single, correct Add-to-Cart handler
+        document.addEventListener('click', async (e) => {
+            const addBtn = e.target.closest('.add-cart');
+            if (!addBtn) return;
 
-    // 🎯 When user selects a size from modal
-    document.querySelectorAll('.size-option').forEach(btn => {
-        btn.addEventListener('click', async function () {
-            selectedSize = this.getAttribute('data-size');
-
-            if (!selectedProductId || !selectedSize) {
-                alert("Something went wrong. Please try again.");
+            // get product id from dataset
+            const productId = parseInt(addBtn.dataset.id, 10);
+            if (!productId || isNaN(productId)) {
+                console.error("Add to cart: invalid product id", addBtn.dataset.id);
+                alert("Unable to add item (invalid product).");
                 return;
             }
+
+            // find selected size in the same product card
+            const figcaption = addBtn.closest('figcaption') || addBtn.closest('.item');
+            if (!figcaption) {
+                console.error("Add to cart: cannot find product card/figcaption");
+                alert("Something went wrong. Try again.");
+                return;
+            }
+
+            const sizeBlock = figcaption.querySelector('.sizes');
+            const selectedSizeBtn = sizeBlock ? sizeBlock.querySelector('.size.selected') : null;
+
+            if (!selectedSizeBtn) {
+                alert("⚠️ Please select a size to proceed!");
+                return;
+            }
+
+            const selectedSize = selectedSizeBtn.dataset.size || selectedSizeBtn.textContent.trim();
+
+            // Prepare payload (match your AddCartRequest properties)
+            const payload = {
+                ProductId: productId,   // server binder is case-insensitive, but PascalCase is clearer
+                Size: selectedSize,
+                Quantity: 1
+            };
 
             try {
                 const response = await fetch('/Cart/AddToCart', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        productId: selectedProductId,
-                        size: selectedSize,
-                        quantity: 1
-                    })
+                    body: JSON.stringify(payload)
                 });
+
+                if (!response.ok) {
+                    console.error("AddToCart failed HTTP:", response.status, await response.text());
+                    alert("Unable to add to cart (network error).");
+                    return;
+                }
 
                 const result = await response.json();
 
                 if (result.success) {
-                    alert("Item added to cart!");
-                    updateCartCount(); // optional: updates badge count
+                    // Redirect to cart route (NOT view file path)
+                    window.location.href = "/Home/Cart";
                 } else {
-                    alert(result.message || "Failed to add item to cart.");
+                    // server returned success: false
+                    alert(result.message || "Unable to add item to cart");
                 }
 
-                // Close the modal
-                const modal = bootstrap.Modal.getInstance(document.getElementById('sizeModal'));
-                modal.hide();
-
-            } catch (err) {
-                console.error("Add to cart error:", err);
+            } catch (error) {
+                console.error("Cart error:", error);
+                alert("Something went wrong!");
             }
         });
-    });
 
-    // 🧮 Update cart count badge in navbar
-    async function updateCartCount() {
-        const badge = document.getElementById('cart-count');
-        try {
-            const response = await fetch('/Cart/GetUserCart');
-            const result = await response.json();
 
-            if (result.success && result.data) {
-                const count = result.data.length;
-                if (count > 0) {
-                    badge.style.display = 'inline-block';
-                    badge.textContent = count;
-                } else {
-                    badge.style.display = 'none';
-                }
-            }
-        } catch (err) {
-            console.error("Cart count update error:", err);
-        }
-    }
+                
+                </script>
 
-    document.addEventListener('DOMContentLoaded', updateCartCount);
-</script>
+  
 
 
 }

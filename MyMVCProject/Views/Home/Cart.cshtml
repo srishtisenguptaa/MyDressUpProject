@@ -1,63 +1,125 @@
-﻿@{
-    ViewData["Title"] = "Your Cart 🛒";
-}
+﻿@model List<MyMVCProject.ViewModels.CartItemViewModel>
 
-<div class="container mt-5">
-    <h2 class="mb-4 text-center">Your Cart 🛍️</h2>
+<div class="container my-4">
 
-    <div id="cart-container" class="row gy-4"></div>
-
-    @* <div id="cart-summary" class="mt-4 p-3 rounded shadow-sm bg-light text-center">
-        <div id="selected-address" class="mb-3">
-            <strong>Deliver To:</strong>
-            <p id="address-text">No address selected.</p>
-            <button class="btn btn-outline-dark btn-sm">Change Address</button>
+    <!-- If cart is empty -->
+    @if (Model == null || !Model.Any())
+    {
+        <div class="text-center my-5">
+            <h3>Your cart is empty 🛒</h3>
+            <a href="/" class="btn btn-dark mt-3">Continue Shopping</a>
         </div>
-        <h5>Total: ₹<span id="total-price">0</span></h5>
-        <button class="btn btn-dark mt-2" id="proceed-btn">Proceed to Buy</button>
-    </div> *@
+
+        return;   // STOP the page from rendering further
+    }
+
+    <!-- Address Section -->
+    <div class="address-box p-3 border rounded mb-3">
+        <h5>Deliver to: <strong>@Model.First().UserName</strong></h5>
+        <p>@Model.First().Address</p>
+        <a href="/Profile/PersonalInfo" class="btn btn-outline-dark btn-sm">Change or Add Address</a>
+    </div>
+
+    <h4 class="mb-3">Shopping Cart (@Model.Count items)</h4>
+
+    <div class="row">
+
+        <!-- LEFT: CART ITEMS -->
+        <div class="col-md-8">
+            @foreach (var item in Model)
+            {
+                <div class="cart-item p-3 mb-3 border rounded d-flex">
+                    <img src="@item.ImageUrl" style="width:120px;height:150px;object-fit:cover;" class="rounded" />
+
+                    <div class="ms-3 flex-grow-1">
+                        <h5>@item.Title</h5>
+                        <p class="text-muted">Size: @item.Size</p>
+                        <p>
+                            Qty:
+                            <select class="form-select d-inline w-auto cart-qty" data-id="@item.CartItemId">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    <option value="@i" selected="@(i == item.Quantity)">
+                                        @i
+                                    </option>
+                                }
+                            </select>
+                        </p>
+                        <p class="fw-bold">₹@item.Price</p>
+                        <button class="btn btn-danger btn-sm remove-item" data-id="@item.CartItemId">
+                            Remove
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- RIGHT: SUMMARY -->
+        <div class="col-md-4">
+            <div class="p-3 border rounded">
+                <h5 class="mb-3">Price Details</h5>
+                <p class="d-flex justify-content-between">
+                    <span>Total Items</span>
+                    <span>@Model.Count</span>
+                </p>
+                <p class="d-flex justify-content-between">
+                    <span>Total Price</span>
+                    <span class="fw-bold">₹@Model.Sum(x => x.Price * x.Quantity)</span>
+                </p>
+                <hr />
+                <a class="btn btn-dark w-100 mt-3" href="/Order/PlaceOrder">
+                    Place Order
+                </a>
+            </div>
+        </div>
+
+    </div>
 </div>
 
-@section Scripts {
-    <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const container = document.getElementById('cart-container');
-            const totalPriceElem = document.getElementById('total-price');
+<script>
 
-            try {
-                const res = await fetch('/Cart/GetUserCart');
-                const result = await res.json();
+    document.querySelectorAll(".cart-qty").forEach(select => {
+        select.addEventListener("change", async function () {
+            const cartItemId = this.dataset.id;
+            const qty = this.value;
 
-                if (!result.success || !result.data.length) {
-                    container.innerHTML = `<p class="text-center text-muted">Your cart is empty!</p>`;
-                    return;
-                }
-
-                let total = 0;
-                container.innerHTML = result.data.map(item => {
-                    total += item.price * item.quantity;
-                    return `
-                        <div class="col-md-4">
-                            <div class="card h-100 shadow-sm">
-                                <img src="${item.imageUrl}" class="card-img-top" alt="${item.title}">
-                                <div class="card-body text-center">
-                                    <h6>${item.title}</h6>
-                                    <p>Size: ${item.size}</p>
-                                    <p>₹${item.price} × ${item.quantity}</p>
-                                </div>
-                            </div>
-                        </div>`;
-                }).join('');
-
-                totalPriceElem.textContent = total.toFixed(2);
-            } catch (err) {
-                console.error("Cart load error:", err);
-                container.innerHTML = `<p class="text-center text-danger">Failed to load cart.</p>`;
-            }
-
-            document.getElementById('proceed-btn').addEventListener('click', () => {
-                window.location.href = '/Checkout'; // or /Order/Confirm
+            const response = await fetch("/Cart/UpdateQuantity", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    cartItemId: cartItemId,
+                    quantity: qty
+                })
             });
+
+            const result = await response.json();
+
+            if (result.success) {
+                console.log("Quantity updated");
+                location.reload(); // REFRESH page to update prices
+            } else {
+                alert("Failed to update quantity");
+            }
         });
-    </script>
-}
+    });
+    document.addEventListener("click", async (e) => {
+        const removeBtn = e.target.closest(".remove-item");
+        if (!removeBtn) return;
+
+        const id = removeBtn.dataset.id;
+
+        if (!confirm("Remove item from cart?")) return;
+
+        const res = await fetch('/Cart/Remove', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cartItemId: id })
+        });
+
+        const result = await res.json();
+
+        if (result.success) {
+            location.reload();
+        }
+    });
+</script>

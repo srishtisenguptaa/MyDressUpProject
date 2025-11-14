@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MyMVCProject.Models;
-using PlayDressUp.Models;
 
 namespace MyMVCProject.DataModel
 {
