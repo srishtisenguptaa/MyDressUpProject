@@ -2,6 +2,7 @@
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using MyMVCProject.DataModel;
+using MyMVCProject.Models;
 
 public class ProfileController : Controller
 {

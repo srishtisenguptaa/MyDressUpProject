@@ -6,17 +6,19 @@ namespace MyMVCProject.Models
 {
     public class UserAddress
     {
-        [Key] // ✅ This tells EF it's the primary key
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+
+       
         public int AddressId { get; set; }
-
-        [Required]
         public int UserId { get; set; }
+        //  // public string FullName { get; set; }
+        ////   public string Phone { get; set; }
+        public string? Pincode { get; set; }
+        public string? District { get; set; }
+        public string? State { get; set; }
+        public string Country { get; set; } = "India";
+        public string? Address { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-        [Required]
-        public string Address { get; set; }
-
-        [ForeignKey("UserId")]
-        public User User { get; set; }
+        public string FullAddress => $"{Address},  {State}, {State} - {Pincode}";
     }
 }
