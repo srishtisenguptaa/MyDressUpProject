@@ -96,16 +96,21 @@ namespace MyMVCProject.Controllers
                 Size = i.Size,
                 Quantity = i.Quantity,
                 Price = i.Price,
-                UserName = user.FullName,
-                Address = user.UserAddress?
-                    .FirstOrDefault()?
-                    .FullAddress ?? "No address found"
+
+                Addresses = user.UserAddress?
+        .Select(a => new UserAddressViewModel
+        {
+            AddressId = a.AddressId,
+            UserName = user.FullName,
+            FullAddress = a.FullAddress
+        }).ToList() ?? new List<UserAddressViewModel>()
             }).ToList();
 
+        
+
             return View("~/Views/Home/Cart.cshtml", vm);
-
-
         }
+
 
 
 

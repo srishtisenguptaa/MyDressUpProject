@@ -47,7 +47,7 @@ public class ProfileController : Controller
 
             // Fetch user addresses with all fields
             SqlCommand addressCmd = new SqlCommand(
-                "SELECT AddressId, Address, Pincode, District, State, Country FROM UserAddresses WHERE UserId = @UserId", con);
+                "SELECT AddressId, Address, Pincode, District, State, City , Country FROM UserAddresses WHERE UserId = @UserId", con);
             addressCmd.Parameters.AddWithValue("@UserId", userId);
             SqlDataReader addrReader = addressCmd.ExecuteReader();
 
@@ -61,6 +61,7 @@ public class ProfileController : Controller
                     Pincode = addrReader["Pincode"]?.ToString(),
                     District = addrReader["District"]?.ToString(),
                     State = addrReader["State"]?.ToString(),
+                    City = addrReader["City"]?.ToString(),
                     Country = addrReader["Country"]?.ToString()
                 });
             }
@@ -91,6 +92,7 @@ public class ProfileController : Controller
             Pincode = model.Pincode?.Trim(),
             District = model.District?.Trim(),
             State = model.State?.Trim(),
+            City = model.City?.Trim(),
             Country = model.Country?.Trim() ?? "India"
         };
 
@@ -102,20 +104,33 @@ public class ProfileController : Controller
 
     // ✅ Edit Address (using EF)
     [HttpPost]
-    public IActionResult EditAddress(int id, string newAddress)
+
+    [HttpPost]
+    public IActionResult EditAddress([FromBody] EditAddressDto model)
     {
-        if (string.IsNullOrWhiteSpace(newAddress))
+        if (string.IsNullOrWhiteSpace(model.Address))
             return Json(new { success = false, message = "Address cannot be empty." });
 
-        var address = _context.UserAddresses.FirstOrDefault(a => a.AddressId == id);
+        var address = _context.UserAddresses
+                             .FirstOrDefault(a => a.AddressId == model.AddressId);
+
         if (address == null)
             return Json(new { success = false, message = "Address not found." });
 
-        address.Address = newAddress.Trim();
+        // Update fields
+        address.Address = model.Address;
+        address.Pincode = model.Pincode;
+        address.District = model.District;
+        address.State = model.State;
+        address.Country = model.Country;
+        address.City = model.City;
         _context.SaveChanges();
 
         return Json(new { success = true, message = "Address updated successfully!" });
     }
+
+
+
 
     // ✅ Delete Address
     [HttpPost]

@@ -105,6 +105,12 @@ public class CartController : Controller
 
         return Json(new { success = true });
     }
+    [HttpPost]
+    public IActionResult SaveSelectedAddress([FromBody] int addressId)
+    {
+        HttpContext.Session.SetInt32("SelectedAddressId", addressId);
+        return Json(new { success = true });
+    }
 
     public class UpdateQtyRequest
     {
