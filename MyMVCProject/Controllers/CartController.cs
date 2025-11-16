@@ -3,10 +3,12 @@ using Microsoft.EntityFrameworkCore;
 using MyMVCProject.DataModel;
 using MyMVCProject.Models;
 using MyMVCProject.ViewModels;
+using System.Text.Json;
 
 public class CartController : Controller
 {
     private readonly ApplicationDbContext _db;
+   
 
     public CartController(ApplicationDbContext db)
     {
@@ -22,6 +24,7 @@ public class CartController : Controller
         var userIdClaim = User.FindFirst("UserId")?.Value;
         if (userIdClaim == null)
             return Json(new { success = false, message = "Please login first" });
+        var selectedAddressId = HttpContext.Session.GetInt32("SelectedAddressId");
 
         int userId = int.Parse(userIdClaim);
 
@@ -106,11 +109,68 @@ public class CartController : Controller
         return Json(new { success = true });
     }
     [HttpPost]
-    public IActionResult SaveSelectedAddress([FromBody] int addressId)
+    [HttpPost]
+    public IActionResult SaveAddressSelection([FromBody] JsonElement data)
     {
-        HttpContext.Session.SetInt32("SelectedAddressId", addressId);
+        int selectedAddressId = data.GetProperty("addressId").GetInt32();
+        HttpContext.Session.SetInt32("SelectedAddressId", selectedAddressId);
         return Json(new { success = true });
     }
+
+    [HttpPost]
+    [HttpPost]
+    public async Task<IActionResult> PlaceOrder()
+    {
+        var userIdClaim = User.FindFirst("UserId")?.Value;
+        if (userIdClaim == null)
+            return Json(new { success = false, message = "Please login first" });
+
+        int userId = int.Parse(userIdClaim);
+
+        // Get selected address from session (nullable)
+        int? selectedAddressId = HttpContext.Session.GetInt32("SelectedAddressId");
+
+        var cartItems = await _db.CartItems
+            .Where(c => c.UserId == userId)
+            .ToListAsync();
+
+        if (!cartItems.Any())
+            return Json(new { success = false, message = "Cart is empty" });
+
+        // Create Order
+        var order = new Order
+        {
+            UserId = userId,
+            AddressId = (int)selectedAddressId,  // Can be null if user has no address
+            TotalAmount = cartItems.Sum(c => c.Price * c.Quantity),
+            OrderDate = DateTime.Now,
+            Status = "Confirmed"
+        };
+
+        _db.Orders.Add(order);
+        await _db.SaveChangesAsync();
+
+        // Create OrderItems
+        foreach (var item in cartItems)
+        {
+            var orderItem = new OrderItem
+            {
+                OrderId = order.OrderId,
+                ProductId = item.ProductId,
+                Size = item.Size,
+                Quantity = item.Quantity,
+                Price = item.Price
+            };
+            _db.OrderItems.Add(orderItem);
+        }
+
+        // Clear cart
+        _db.CartItems.RemoveRange(cartItems);
+        await _db.SaveChangesAsync();
+
+        return Json(new { success = true });
+    }
+
 
     public class UpdateQtyRequest
     {

@@ -140,9 +140,21 @@ public class ProfileController : Controller
         if (addr == null)
             return Json(new { success = false, message = "Address not found." });
 
+        // Check if any order references this address
+        bool isUsed = _context.Orders.Any(o => o.AddressId == id);
+        if (isUsed)
+        {
+            return Json(new
+            {
+                success = false,
+                message = "Cannot delete this address because it is used in existing orders."
+            });
+        }
+
         _context.UserAddresses.Remove(addr);
         _context.SaveChanges();
 
         return Json(new { success = true, message = "Address deleted successfully!" });
     }
+
 }

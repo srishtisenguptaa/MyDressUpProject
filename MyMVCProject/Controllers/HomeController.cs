@@ -88,6 +88,10 @@ namespace MyMVCProject.Controllers
                 .Include(c => c.Product)
                 .ToListAsync();
 
+            // Get previously selected address from session
+            var selectedAddressId = HttpContext.Session.GetInt32("SelectedAddressId");
+            ViewBag.SelectedAddressId = selectedAddressId;
+
             var vm = items.Select(i => new CartItemViewModel
             {
                 CartItemId = i.CartItemId,
@@ -98,18 +102,17 @@ namespace MyMVCProject.Controllers
                 Price = i.Price,
 
                 Addresses = user.UserAddress?
-        .Select(a => new UserAddressViewModel
-        {
-            AddressId = a.AddressId,
-            UserName = user.FullName,
-            FullAddress = a.FullAddress
-        }).ToList() ?? new List<UserAddressViewModel>()
+                    .Select(a => new UserAddressViewModel
+                    {
+                        AddressId = a.AddressId,
+                        UserName = user.FullName,
+                        FullAddress = a.FullAddress
+                    }).ToList() ?? new List<UserAddressViewModel>()
             }).ToList();
-
-        
 
             return View("~/Views/Home/Cart.cshtml", vm);
         }
+
 
 
 
