@@ -20,7 +20,8 @@ namespace MyMVCProject.DataModel
         public DbSet<UserAddress> UserAddresses { get; set; }
         public DbSet<SelectedSize> SelectedSizes { get; set; }
         public DbSet<OtpVerification> OtpVerifications { get; set; }
-
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderItem> OrderItems { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

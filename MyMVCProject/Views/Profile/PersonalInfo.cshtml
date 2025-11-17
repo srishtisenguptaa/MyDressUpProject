@@ -10,6 +10,8 @@
     <h2 class="text-center mb-4 fancy-heading">My Personal Information 💫</h2>
 
     <div class="card shadow-lg p-4 rounded-4">
+
+        <!-- User Info -->
         <div class="mb-3">
             <label class="form-label fw-bold">Full Name</label>
             <input class="form-control" value="@Model.FullName" readonly />
@@ -29,27 +31,66 @@
             {
                 foreach (var addr in Model.Addresses)
                 {
-                    <div class="col-md-6">
+                    <div class="col-12">
                         <div class="card p-3 shadow-sm border-0 rounded-4 bg-light position-relative">
-                            <textarea class="form-control border-0 bg-transparent address-textarea mb-2"
+
+                            <!-- LABEL -->
+                            <label class="form-label fw-bold">Address</label>
+                            <textarea class="form-control border-0 bg-transparent address-text mb-2"
                               data-id="@addr.AddressId"
                               readonly>@addr.Address</textarea>
 
-                            <div class="small text-muted">
-                                <strong>Pincode:</strong> @addr.Pincode <br />
-                                <strong>District:</strong> @addr.District <br />
-                                <strong>State:</strong> @addr.State <br />
-                                <strong>Country:</strong> @addr.Country
+                            <!-- PINCODE + DETAILS -->
+                            <div class="row g-2">
+
+                                <div class="col-md-3">
+                                    <label class="form-label small fw-bold">Pincode</label>
+                                    <input class="form-control form-control-sm border-1"
+                                           data-id="@addr.AddressId"
+                                           data-field="Pincode"
+                                           value="@addr.Pincode"
+                                           readonly />
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label class="form-label small fw-bold">District</label>
+                                    <input id="district-@addr.AddressId"
+                                           class="form-control form-control-sm bg-light"
+                                           value="@addr.District"
+                                           readonly />
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label class="form-label small fw-bold">City</label>
+                                    <input id="city-@addr.AddressId"
+                                           class="form-control form-control-sm bg-light"
+                                           value="@addr.City"
+                                            />
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label class="form-label small fw-bold">State</label>
+                                    <input id="state-@addr.AddressId"
+                                           class="form-control form-control-sm bg-light"
+                                           value="@addr.State"
+                                           readonly />
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label class="form-label small fw-bold">Country</label>
+                                    <input id="country-@addr.AddressId"
+                                           class="form-control form-control-sm bg-light"
+                                           value="@addr.Country"
+                                           readonly />
+                                </div>
                             </div>
 
+                            <!-- BUTTONS -->
                             <div class="position-absolute top-0 end-0 mt-2 me-2">
-                                <button class="btn btn-sm btn-outline-primary me-1 edit-btn" data-id="@addr.AddressId" title="Edit">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger delete-btn" data-id="@addr.AddressId" title="Delete">
-                                    <i class="bi bi-trash"></i>
-                                </button>
+                                <button class="btn btn-sm btn-outline-primary me-1 edit-btn" data-id="@addr.AddressId">✏️</button>
+                                <button class="btn btn-sm btn-outline-danger delete-btn" data-id="@addr.AddressId">🗑️</button>
                             </div>
+
                         </div>
                     </div>
                 }
@@ -63,36 +104,55 @@
         </div>
 
         <div class="mt-5">
-            <h5 class="mb-3">Add a New Address</h5>
+            <h5 class="mb-3 fw-bold">Add a New Address</h5>
 
             <div class="row g-3">
+
                 <div class="col-12">
+                    <label class="form-label fw-bold">Address</label>
                     <textarea id="address" class="form-control rounded-3" placeholder="Type your address here..."></textarea>
                 </div>
+
                 <div class="col-md-4">
+                    <label class="form-label fw-bold">Pincode</label>
                     <input id="pincode" class="form-control" placeholder="Enter Pincode" maxlength="6" />
                 </div>
+
                 <div class="col-md-4">
-                    <input id="district" class="form-control" placeholder="District" readonly />
+                    <label class="form-label fw-bold">District</label>
+                    <input id="district" class="form-control" readonly />
                 </div>
+
                 <div class="col-md-4">
-                    <input id="state" class="form-control" placeholder="State" readonly />
+                    <label class="form-label fw-bold">City</label>
+                    <input id="city" class="form-control" placeholder="Enter City" maxlength="20" />
                 </div>
-                <div class="col-md-4 mt-3">
+               
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">State</label>
+                    <input id="state" class="form-control"  />
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Country</label>
                     <input id="country" class="form-control" value="India" readonly />
                 </div>
+
             </div>
 
             <button id="addAddressBtn" class="btn btn-primary mt-4 px-4">Add Address</button>
         </div>
+
     </div>
 </div>
 
 @section Scripts {
     <script>
+        console.log("JS Loaded Correctly");
+
         document.addEventListener("DOMContentLoaded", function () {
 
-            // 🔹 Auto-fill District & State on Pincode blur
+            // ---------------- Add Address ----------------
             document.getElementById('pincode').addEventListener('blur', async function () {
                 const pin = this.value.trim();
                 if (pin.length === 6) {
@@ -102,38 +162,26 @@
                         const po = data[0].PostOffice[0];
                         document.getElementById('district').value = po.District;
                         document.getElementById('state').value = po.State;
-                        document.getElementById('country').value = "India";
-                    } else {
-                        alert("Invalid pincode entered!");
-                        document.getElementById('district').value = "";
-                        document.getElementById('state').value = "";
                     }
                 }
             });
 
-            // 🔹 Add New Address
             document.getElementById("addAddressBtn").addEventListener("click", () => {
                 const address = document.getElementById("address").value.trim();
                 const pincode = document.getElementById("pincode").value.trim();
                 const district = document.getElementById("district").value.trim();
                 const state = document.getElementById("state").value.trim();
                 const country = document.getElementById("country").value.trim();
-
+                const city = document.getElementById("city").value.trim();
                 if (!address || !pincode) {
-                    alert("Please fill in both address and pincode.");
+                    alert("Please fill address & pincode!");
                     return;
                 }
 
                 fetch('/Profile/AddAddress', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        Address: address,
-                        Pincode: pincode,
-                        District: district,
-                        State: state,
-                        Country: country
-                    })
+                    body: JSON.stringify({ Address: address, Pincode: pincode, District: district, State: state, Country: country })
                 })
                     .then(res => res.json())
                     .then(data => {
@@ -142,15 +190,15 @@
                     });
             });
 
-            // 🔹 Delete Address
+            // ---------------- Delete ----------------
             document.querySelectorAll(".delete-btn").forEach(btn => {
                 btn.addEventListener("click", () => {
                     const id = btn.dataset.id;
-                    if (confirm("Are you sure you want to delete this address?")) {
+                    if (confirm("Delete this address?")) {
                         fetch('/Profile/DeleteAddress', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                            body: new URLSearchParams({ id: id })
+                            body: new URLSearchParams({ id })
                         })
                             .then(res => res.json())
                             .then(data => {
@@ -161,29 +209,61 @@
                 });
             });
 
-            // 🔹 Edit Address
+            // ---------------- Edit Mode ----------------
             document.querySelectorAll(".edit-btn").forEach(btn => {
                 btn.addEventListener("click", () => {
+
                     const id = btn.dataset.id;
-                    const textarea = document.querySelector(`textarea[data-id="${id}"]`);
-                    const isEditing = !textarea.readOnly;
 
-                    if (isEditing) {
-                        const newText = textarea.value.trim();
+                    const addr = document.querySelector(`textarea[data-id="${id}"]`);
+                    const pin = document.querySelector(`input[data-id="${id}"][data-field="Pincode"]`);
+                    const dist = document.getElementById(`district-${id}`);
+                    const state = document.getElementById(`state-${id}`);
+                    const country = document.getElementById(`country-${id}`);
+                    const city = document.getElementById(`city-${id}`);
+                    const editing = !addr.readOnly;
 
+                    if (editing) {
+                        // SAVE
                         fetch('/Profile/EditAddress', {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                            body: new URLSearchParams({ id: id, newAddress: newText })
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                AddressId: id,
+                                Address: addr.value.trim(),
+                                city : city.value.trim(),
+                                Pincode: pin.value.trim(),
+                                District: dist.value,
+                                State: state.value,
+                                Country: country.value
+                                
+                            })
                         })
                             .then(res => res.json())
-                            .then(data => {
-                                alert(data.message);
-                                if (data.success) textarea.readOnly = true;
+                            .then(result => {
+                                alert(result.message);
+                                if (result.success) location.reload();
                             });
+
                     } else {
-                        textarea.readOnly = false;
-                        textarea.focus();
+                        // EDIT MODE ON
+                        addr.readOnly = false;
+                        pin.readOnly = false;
+
+                        btn.innerHTML = "💾";
+
+                        pin.addEventListener("blur", async () => {
+                            const pinCode = pin.value.trim();
+                            if (pinCode.length === 6) {
+                                const res = await fetch(`https://api.postalpincode.in/pincode/${pinCode}`);
+                                const data = await res.json();
+                                if (data[0].Status === "Success") {
+                                    const po = data[0].PostOffice[0];
+                                    dist.value = po.District;
+                                    state.value = po.State;
+                                }
+                            }
+                        });
                     }
                 });
             });

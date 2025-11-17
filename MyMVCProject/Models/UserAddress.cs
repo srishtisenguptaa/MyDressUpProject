@@ -18,7 +18,8 @@ namespace MyMVCProject.Models
         public string Country { get; set; } = "India";
         public string? Address { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public string? City { get; set; }  
+        public string FullAddress => $"{Address}, {City}, {District}, {State} - {Pincode}";
 
-        public string FullAddress => $"{Address},  {State}, {State} - {Pincode}";
     }
 }

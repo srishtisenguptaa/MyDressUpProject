@@ -9,19 +9,60 @@
             <h3>Your cart is empty 🛒</h3>
             <a href="/" class="btn btn-dark mt-3">Continue Shopping</a>
         </div>
-
-        return;   // STOP the page from rendering further
+        return;
     }
 
     <!-- Address Section -->
-    <div class="address-box p-3 border rounded mb-3">
-        <h5>Deliver to: <strong>@Model.First().UserName</strong></h5>
-        <p>@Model.First().Address</p>
-        <a href="/Profile/PersonalInfo" class="btn btn-outline-dark btn-sm">Change or Add Address</a>
-    </div>
+    @{
+        var addresses = Model.First().Addresses;
+        int? selectedId = null;
+        MyMVCProject.ViewModels.UserAddressViewModel selectedAddress = null;
 
-    <h4 class="mb-3">Shopping Cart (@Model.Count items)</h4>
+        if (addresses.Any())
+        {
+            selectedId = ViewBag.SelectedAddressId ?? addresses.First().AddressId;
+            selectedAddress = addresses.First(a => a.AddressId == selectedId);
+        }
+    }
 
+    @if (!addresses.Any())
+    {
+        <div class="address-box p-3 border rounded mb-3">
+            <h5>No address found</h5>
+            <a href="/Profile/PersonalInfo" class="btn btn-outline-dark btn-sm mt-2">Add Address</a>
+        </div>
+    }
+    else if (addresses.Count == 1)
+    {
+        <div class="address-box p-3 border rounded mb-3">
+            <h5>Deliver to: <strong>@addresses[0].UserName</strong></h5>
+            <p>@addresses[0].FullAddress</p>
+            <a href="/Profile/PersonalInfo" class="btn btn-outline-dark btn-sm mt-2">Change or Add Address</a>
+        </div>
+    }
+    else
+    {
+        <div class="address-box p-3 border rounded mb-3">
+            <h5>Select Delivery Address</h5>
+            <select id="addressSelect" class="form-select mb-2">
+                @foreach (var a in addresses)
+                {
+                    <option value="@a.AddressId" selected="@(selectedId == a.AddressId)">
+                        @a.FullAddress
+                    </option>
+                }
+            </select>
+            <div id="selectedAddress">
+                <strong>@selectedAddress?.UserName</strong>
+                <p>@selectedAddress?.FullAddress</p>
+            </div>
+            <a href="/Profile/PersonalInfo" class="btn btn-outline-dark btn-sm mt-2">Manage Addresses</a>
+        </div>
+    }
+
+
+    <!-- Shopping Cart Items -->
+    <h4 class="mb-3">Shopping Cart (@Model.Sum(x => x.Quantity))</h4>
     <div class="row">
 
         <!-- LEFT: CART ITEMS -->
@@ -30,7 +71,6 @@
             {
                 <div class="cart-item p-3 mb-3 border rounded d-flex">
                     <img src="@item.ImageUrl" style="width:120px;height:150px;object-fit:cover;" class="rounded" />
-
                     <div class="ms-3 flex-grow-1">
                         <h5>@item.Title</h5>
                         <p class="text-muted">Size: @item.Size</p>
@@ -39,16 +79,12 @@
                             <select class="form-select d-inline w-auto cart-qty" data-id="@item.CartItemId">
                                 @for (int i = 1; i <= 5; i++)
                                 {
-                                    <option value="@i" selected="@(i == item.Quantity)">
-                                        @i
-                                    </option>
+                                    <option value="@i" selected="@(i == item.Quantity)">@i</option>
                                 }
                             </select>
                         </p>
                         <p class="fw-bold">₹@item.Price</p>
-                        <button class="btn btn-danger btn-sm remove-item" data-id="@item.CartItemId">
-                            Remove
-                        </button>
+                        <button class="btn btn-danger btn-sm remove-item" data-id="@item.CartItemId">Remove</button>
                     </div>
                 </div>
             }
@@ -60,66 +96,124 @@
                 <h5 class="mb-3">Price Details</h5>
                 <p class="d-flex justify-content-between">
                     <span>Total Items</span>
-                    <span>@Model.Count</span>
+                    <span>@Model.Sum(x => x.Quantity)</span>
                 </p>
                 <p class="d-flex justify-content-between">
                     <span>Total Price</span>
                     <span class="fw-bold">₹@Model.Sum(x => x.Price * x.Quantity)</span>
                 </p>
                 <hr />
-                <a class="btn btn-dark w-100 mt-3" href="/Order/PlaceOrder">
-                    Place Order
-                </a>
+
+                @* Place Order Button *@
+                @if (Model != null && Model.Any())
+                {
+                    <button type="button" id="placeOrderBtn" class="btn btn-dark w-100 mt-3">
+                        Place Order
+                    </button>
+                }
             </div>
         </div>
-
     </div>
 </div>
 
-<script>
+<!-- Overlay and Order Confirmation Popup -->
+<div id="overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+    background:rgba(0,0,0,0.4); z-index:999;"></div>
 
+<div id="orderPopup" style="display:none; position:fixed; top:50%; left:50%;
+    transform:translate(-50%,-50%); background:white; padding:30px; border-radius:10px;
+    box-shadow:0 0 15px rgba(0,0,0,0.3); z-index:1000; width:350px; text-align:center;">
+    <button id="closePopup" style="position:absolute; top:5px; right:10px; border:none;
+        background:none; font-size:22px; cursor:pointer;">
+        &times;
+    </button>
+    <h4>✅ Your order is confirmed!</h4>
+    <p>Thank you for shopping with us.</p>
+</div>
+
+<script>
+    // -----------------------------
+    // Address Selection
+    // -----------------------------
+    const addresses = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(addresses));
+    const addressSelect = document.getElementById("addressSelect");
+    const selectedDiv = document.getElementById("selectedAddress");
+
+    if(addressSelect){
+        const initialSelected = addresses.find(a => a.AddressId == addressSelect.value);
+        selectedDiv.innerHTML = `<strong>${initialSelected.UserName}</strong>
+                                 <p>${initialSelected.FullAddress}</p>`;
+
+        addressSelect.addEventListener("change", async function () {
+            const selected = addresses.find(a => a.AddressId == this.value);
+            selectedDiv.innerHTML = `<strong>${selected.UserName}</strong>
+                                     <p>${selected.FullAddress}</p>`;
+            this.value = selected.AddressId;
+
+            await fetch("/Cart/SaveAddressSelection", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ addressId: selected.AddressId })
+            });
+        });
+    }
+
+    // -----------------------------
+    // Update Quantity
+    // -----------------------------
     document.querySelectorAll(".cart-qty").forEach(select => {
         select.addEventListener("change", async function () {
             const cartItemId = this.dataset.id;
             const qty = this.value;
-
             const response = await fetch("/Cart/UpdateQuantity", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    cartItemId: cartItemId,
-                    quantity: qty
-                })
+                body: JSON.stringify({ cartItemId: cartItemId, quantity: qty })
             });
-
             const result = await response.json();
-
-            if (result.success) {
-                console.log("Quantity updated");
-                location.reload(); // REFRESH page to update prices
-            } else {
-                alert("Failed to update quantity");
-            }
+            if(result.success) location.reload();
+            else alert("Failed to update quantity");
         });
     });
+
+    // -----------------------------
+    // Remove Item
+    // -----------------------------
     document.addEventListener("click", async (e) => {
         const removeBtn = e.target.closest(".remove-item");
         if (!removeBtn) return;
-
-        const id = removeBtn.dataset.id;
-
         if (!confirm("Remove item from cart?")) return;
 
-        const res = await fetch('/Cart/Remove', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ cartItemId: id })
+        const res = await fetch("/Cart/Remove", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ cartItemId: removeBtn.dataset.id })
         });
-
         const result = await res.json();
+        if(result.success) location.reload();
+    });
 
-        if (result.success) {
-            location.reload();
-        }
+    // -----------------------------
+    // Place Order and Popup
+    // -----------------------------
+    const placeOrderBtn = document.getElementById("placeOrderBtn");
+    if(placeOrderBtn){
+        placeOrderBtn.addEventListener("click", async function() {
+            const res = await fetch("/Cart/PlaceOrder", { method: "POST" });
+            const data = await res.json();
+
+            if(data.success){
+                document.getElementById("orderPopup").style.display = "block";
+                document.getElementById("overlay").style.display = "block";
+            } else {
+                alert(data.message);
+            }
+        });
+    }
+
+    document.getElementById("closePopup").addEventListener("click", function(){
+        document.getElementById("orderPopup").style.display = "none";
+        document.getElementById("overlay").style.display = "none";
+        location.reload(); // Refresh cart page (empty)
     });
 </script>
