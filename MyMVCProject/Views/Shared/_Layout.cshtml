@@ -93,13 +93,20 @@
                             </div>
                         }
 
-
+                        <a class="btn btn-outline-secondary position-relative me-2 d-flex align-items-center"
+                           asp-controller="Home" asp-action="WishList" id="wishlist-link">
+                            <i class="bi bi-heart me-1"></i> Wishlist
+                            <span id="wishlist-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                                  style="font-size: 0.7rem; display: none;">
+                                0
+                            </span>
+                        </a>
 
 
                         <!-- Enhanced Toggle -->
-                        <button id="themeToggle" type="button" title="Switch Theme">
+                        @* <button id="themeToggle" type="button" title="Switch Theme">
                             <i class="bi bi-moon-fill"></i>
-                        </button>
+                        </button> *@
                     </form>
                 </div>
             </div>
