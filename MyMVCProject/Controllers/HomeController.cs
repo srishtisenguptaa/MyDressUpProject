@@ -113,7 +113,10 @@ namespace MyMVCProject.Controllers
             return View("~/Views/Home/Cart.cshtml", vm);
         }
 
-
+        public IActionResult MyOrders()
+        {
+            return View("~/Views/MyOrder/MyOrders.cshtml");
+        }
 
 
 

@@ -234,5 +234,7 @@ namespace MyMVCProject.Controllers
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
+        
     }
 }

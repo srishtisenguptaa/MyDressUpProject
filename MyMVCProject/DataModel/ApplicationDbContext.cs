@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MyMVCProject.Models;
+using MyUserProject.Models;
+using MyUserProject.ViewModels;
 
 namespace MyMVCProject.DataModel
 {
@@ -22,6 +24,9 @@ namespace MyMVCProject.DataModel
         public DbSet<OtpVerification> OtpVerifications { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
+        public DbSet<ProductReview> ProductReviews { get; set; }
+
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -30,7 +35,12 @@ namespace MyMVCProject.DataModel
                                    // Ensure EF doesn’t try to map LoginViewModel
                                    //  modelBuilder.Entity<LoginViewModel>().HasNoKey();
 
+       //     modelBuilder.Entity<OrderItem>()
+       //.HasOne(oi => oi.Products)
+       //.WithMany()
+       //.HasForeignKey(oi => oi.ProductId);
 
+       //     base.OnModelCreating(modelBuilder);
         }
 }
 }

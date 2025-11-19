@@ -1,0 +1,227 @@
+﻿@{
+    ViewData["Title"] = "My Orders";
+}
+
+<link rel="stylesheet" href="~/css/MyOrders.css" />
+
+<div class="container myorders-page">
+    <h1 class="page-title">My Orders</h1>
+
+    <div id="ordersContainer" class="orders-list">
+        <div class="loading">Loading your orders...</div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => loadOrders());
+
+    async function loadOrders() {
+        const container = document.getElementById("ordersContainer");
+        container.innerHTML = `<div class="loading">Loading your orders...</div>`;
+
+        try {
+            const res = await fetch("/api/MyOrder/MyOrders");
+            if (!res.ok) throw new Error("Failed to fetch orders");
+            const orders = await res.json();
+            renderOrders(orders);
+        } catch (err) {
+            container.innerHTML = `<div class="error">Failed to load orders. Please try again later.</div>`;
+            console.error(err);
+        }
+    }
+
+    function renderOrders(orders) {
+        const container = document.getElementById("ordersContainer");
+        if (!orders || orders.length === 0) {
+            container.innerHTML = `<div class="empty">No orders found.</div>`;
+            return;
+        }
+
+        let html = "";
+        orders.forEach(order => {
+            html += `
+            <div class="order-card">
+                <div class="order-top">
+                    <div class="order-meta">
+                        <div class="order-id">Delivered On</div>
+                        <div class="order-date">${formatDate(order.orderDate)}</div>
+                    </div>
+
+                    <div class="order-status-block">
+                        <div class="timeline">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-line"></div>
+                        </div>
+                        <div class="status-badge">${order.status}</div>
+                    </div>
+                </div>
+
+                <div class="order-body">
+                    ${order.items.map(item => productRowHtml(item)).join("")}
+                </div>
+
+                
+            </div>
+            `;
+        });
+
+        container.innerHTML = html;
+
+        // attach accordion toggles and star handlers
+        document.querySelectorAll(".review-toggle").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const id = btn.getAttribute("data-product");
+                const panel = document.getElementById(`review-panel-${id}`);
+                const expanded = panel.classList.toggle("open");
+                btn.innerText = expanded ? "Close" : "Rate & Review";
+            });
+        });
+
+        document.querySelectorAll(".stars .star").forEach(star => {
+            star.addEventListener("mouseover", onStarHover);
+            star.addEventListener("mouseout", onStarOut);
+            star.addEventListener("click", onStarClick);
+        });
+    }
+
+    function productRowHtml(item) {
+        // If already reviewed, show Reviewed badge instead of review UI
+        const reviewSection = item.hasReviewed
+            ? `<div class="review-status"><span class="badge reviewed">Reviewed ✔</span></div>`
+            : `
+            <div class="review-actions">
+                <button class="btn-review review-toggle" data-product="${item.productId}">Rate & Review</button>
+                <div id="review-panel-${item.productId}" class="review-panel" aria-hidden="true">
+                    <div class="stars" data-product="${item.productId}">
+                        ${[1,2,3,4,5].map(s => `<span class="star" data-star="${s}" title="${s} star">&#9733;</span>`).join("")}
+                    </div>
+                    <textarea id="review-comment-${item.productId}" class="review-text" placeholder="Share your thoughts (max 500 chars)"></textarea>
+                    <div class="review-actions-row">
+                        <button class="btn btn-submit" onclick="submitReview(${item.productId})">Submit</button>
+                        <span class="review-note">Your review will help others</span>
+                    </div>
+                </div>
+            </div>`;
+
+        return `
+        <div class="product-row">
+            <div class="product-left">
+                <img src="${item.imageUrl}" alt="${escapeHtml(item.productTitle)}" class="product-thumb" />
+            </div>
+
+            <div class="product-center">
+                <div class="product-title">${escapeHtml(item.productTitle)}</div>
+                <div class="product-meta">Size: ${escapeHtml(item.size)} &nbsp; | &nbsp; Qty: ${item.quantity}</div>
+                <div class="product-price">₹${item.price}</div>
+            </div>
+
+            <div class="product-right">
+                ${reviewSection}
+            </div>
+        </div>
+        `;
+    }
+
+    // Star handlers
+    function onStarHover(e) {
+        const star = e.currentTarget;
+        const container = star.parentElement;
+        const score = parseInt(star.getAttribute("data-star"), 10);
+        highlightStars(container, score);
+    }
+
+    function onStarOut(e) {
+        const star = e.currentTarget;
+        const container = star.parentElement;
+        const current = parseInt(container.getAttribute("data-rating") || 0, 10);
+        highlightStars(container, current);
+    }
+
+    function onStarClick(e) {
+        const star = e.currentTarget;
+        const container = star.parentElement;
+        const score = parseInt(star.getAttribute("data-star"), 10);
+        container.setAttribute("data-rating", score);
+        highlightStars(container, score);
+    }
+
+    function highlightStars(container, count) {
+        [...container.children].forEach(s => {
+            const val = parseInt(s.getAttribute("data-star"), 10);
+            s.classList.toggle("selected", val <= count);
+        });
+    }
+
+    async function submitReview(productId) {
+        const starsContainer = document.querySelector(`#review-panel-${productId} .stars`);
+        const rating = parseInt(starsContainer?.getAttribute("data-rating") || 0, 10);
+        const commentEl = document.getElementById(`review-comment-${productId}`);
+        const comment = commentEl?.value?.trim() || "";
+
+        if (!rating || rating < 1 || rating > 5) {
+            alert("Please select a star rating (1-5).");
+            return;
+        }
+
+        if (comment.length > 500) {
+            alert("Comment can be a maximum of 500 characters.");
+            return;
+        }
+
+        // disable UI
+        const panel = document.getElementById(`review-panel-${productId}`);
+        const submitBtn = panel.querySelector(".btn-submit");
+        submitBtn.disabled = true;
+        submitBtn.innerText = "Submitting...";
+
+        try {
+            const payload = { productId: productId, rating: rating, comment: comment };
+            const res = await fetch("/api/MyOrder/AddReview", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) {
+                const err = await res.json().catch(()=>({message:'Failed'}));
+                throw new Error(err?.message || "Failed to submit review");
+            }
+
+            // success: visually mark reviewed and close panel
+            panel.classList.remove("open");
+            const btn = document.querySelector(`.review-toggle[data-product="${productId}"]`);
+            if (btn) btn.innerText = "Rate & Review";
+            // replace panel with Reviewed badge
+            const rightCol = panel.closest(".product-right");
+            if (rightCol) {
+                rightCol.innerHTML = `<div class="review-status"><span class="badge reviewed">Reviewed ✔</span></div>`;
+            }
+            showToast("Review submitted. Thanks!");
+        } catch (err) {
+            console.error(err);
+            alert("Failed to submit review. Try again.");
+            submitBtn.disabled = false;
+            submitBtn.innerText = "Submit";
+        }
+    }
+
+    function formatDate(dateStr) {
+        const d = new Date(dateStr);
+        return d.toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+    }
+
+    function escapeHtml(text) {
+        if (!text) return "";
+        return text.replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+    }
+
+    // simple toast
+    function showToast(msg) {
+        let t = document.createElement("div");
+        t.className = "toast-message";
+        t.innerText = msg;
+        document.body.appendChild(t);
+        setTimeout(()=> t.classList.add("visible"), 10);
+        setTimeout(()=> { t.classList.remove("visible"); setTimeout(()=>t.remove(),300); }, 3000);
+    }
+</script>

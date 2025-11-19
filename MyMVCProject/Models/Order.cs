@@ -50,5 +50,7 @@ namespace MyMVCProject.Models
         // Navigation
         [ForeignKey("OrderId")]
         public virtual Order Order { get; set; }
+
+        public Product Product { get; set; }
     }
 }
