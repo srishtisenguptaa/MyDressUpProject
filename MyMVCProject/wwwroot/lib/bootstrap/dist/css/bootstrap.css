@@ -3726,12 +3726,13 @@ textarea.form-control-lg {
 }
 
 .dropdown-header {
-  display: block;
-  padding: 0.5rem 1rem;
-  margin-bottom: 0;
-  font-size: 0.875rem;
-  color: #6c757d;
-  white-space: nowrap;
+    display: block;
+    padding: 0.5rem 1rem;
+    margin-bottom: 0;
+    font-size: 0.875rem;
+    color: #6c757d;
+    white-space: nowrap;
+    margin-bottom: 0 !important;
 }
 
 .dropdown-item-text {

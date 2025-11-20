@@ -4,7 +4,7 @@
 
     .login-container {
     max-width: 380px;
-    margin: 80px auto;
+    margin: 30px auto;
     background: #fff;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -76,3 +76,69 @@
     font-weight: 500;
     text-align: center;
 }
+.or-divider {
+    width: 100%;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #666;
+    margin: 10px 0;
+    position: relative;
+    font-weight: 500;
+}
+
+    .or-divider::before,
+    .or-divider::after {
+        content: "";
+        height: 1px;
+        width: 40%;
+        background: #ccc;
+        position: absolute;
+        top: 50%;
+    }
+
+    .or-divider::before {
+        left: 0;
+    }
+
+    .or-divider::after {
+        right: 0;
+    }
+
+/* Make both login buttons same width, same height */
+.btn-login,
+.btn-otp {
+    display: block;
+    width: 100%;
+    padding: 12px; /* same padding */
+    border-radius: 10px; /* same roundness */
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+/* OTP button same green as login */
+.btn-otp {
+    background-color: #198754;
+    color: white !important;
+}
+
+/* OR divider full width and aligned */
+.or-divider {
+    width: 100%;
+    text-align: center;
+    margin: 10px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+    .or-divider::before,
+    .or-divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: #ccc;
+        margin: 0 10px;
+    }
