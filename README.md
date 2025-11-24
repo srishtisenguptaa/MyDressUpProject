@@ -90,8 +90,15 @@ MyMVCProject/wwwroot/Images/CartPage.png
 
 MyMVCProject/wwwroot/Images/RegisterPage.png
 MyMVCProject/wwwroot/Images/LoginWithPswd.png
-MyMVCProject/wwwroot/Images/LoginWithOTP.png
 
+### 🔐 **Login with OTP**
+
+MyMVCProject/wwwroot/Images/LoginWithOTP.png
+MyMVCProject/wwwroot/Images/EmailOtp.png
+MyMVCProject/wwwroot/Images/OTPVerify.png
+
+### ❤️ **My Orders Page**
+MyMVCProject/wwwroot/Images/MyOrders.png
 ---
 
 ## ⚙️ **Tech Stack**
@@ -151,7 +158,6 @@ MyMVCProject/wwwroot/Images/LoginWithOTP.png
 ## 💡 **Future Enhancements (Optional Add-ons)**
 
 * Payment gateway integration
-* User profile + order history
 * Admin dashboard
 * Product recommendations system
 * AI-based outfit suggestions
