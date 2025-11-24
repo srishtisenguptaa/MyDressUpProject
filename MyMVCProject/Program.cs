@@ -3,16 +3,22 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MyMVCProject.DataModel;
+using MyUserProject.Services;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ----------------- Basic MVC & DB setup (unchanged)
+
+// ----------------- Basic MVC & DB setup
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// ----------------- Add Cookie Authentication (for web)
+// ----------------- REGISTER SERVICES
+builder.Services.AddScoped<EmailService>();
+builder.Services.AddSingleton<JwtService>();
+
+// ----------------- Cookie Authentication
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -24,7 +30,7 @@ builder.Services.AddAuthentication(options =>
     options.ExpireTimeSpan = TimeSpan.FromDays(365);
     options.SlidingExpiration = true;
 })
-// ----------------- Add JWT Authentication (for API/OTP)
+// ----------------- JWT Authentication
 .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
@@ -47,15 +53,14 @@ var app = builder.Build();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
-
+app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseSession();
+
 
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
-
