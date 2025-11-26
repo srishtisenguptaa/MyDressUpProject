@@ -32,20 +32,19 @@
                 foreach (var addr in Model.Addresses)
                 {
                     <div class="col-12">
-                        <div class="card p-3 shadow-sm border-0 rounded-4 bg-light position-relative">
+                        <div class="saved-address-card">
 
-                            <!-- LABEL -->
                             <label class="form-label fw-bold">Address</label>
-                            <textarea class="form-control border-0 bg-transparent address-text mb-2"
+
+                            <textarea class="form-control address-text mb-2"
                               data-id="@addr.AddressId"
                               readonly>@addr.Address</textarea>
 
-                            <!-- PINCODE + DETAILS -->
                             <div class="row g-2">
 
                                 <div class="col-md-3">
                                     <label class="form-label small fw-bold">Pincode</label>
-                                    <input class="form-control form-control-sm border-1"
+                                    <input class="form-control form-control-sm"
                                            data-id="@addr.AddressId"
                                            data-field="Pincode"
                                            value="@addr.Pincode"
@@ -63,15 +62,14 @@
                                 <div class="col-md-3">
                                     <label class="form-label small fw-bold">City</label>
                                     <input id="city-@addr.AddressId"
-                                           class="form-control form-control-sm bg-light"
-                                           value="@addr.City"
-                                            />
+                                           class="form-control form-control-sm"
+                                           value="@addr.City" />
                                 </div>
 
                                 <div class="col-md-3">
                                     <label class="form-label small fw-bold">State</label>
                                     <input id="state-@addr.AddressId"
-                                           class="form-control form-control-sm bg-light"
+                                           class="form-control form-control-sm"
                                            value="@addr.State"
                                            readonly />
                                 </div>
@@ -79,20 +77,29 @@
                                 <div class="col-md-3">
                                     <label class="form-label small fw-bold">Country</label>
                                     <input id="country-@addr.AddressId"
-                                           class="form-control form-control-sm bg-light"
+                                           class="form-control form-control-sm"
                                            value="@addr.Country"
                                            readonly />
                                 </div>
+
                             </div>
 
-                            <!-- BUTTONS -->
+                            <!-- TOP-RIGHT BUTTONS -->
                             <div class="position-absolute top-0 end-0 mt-2 me-2">
-                                <button class="btn btn-sm btn-outline-primary me-1 edit-btn" data-id="@addr.AddressId">✏️</button>
-                                <button class="btn btn-sm btn-outline-danger delete-btn" data-id="@addr.AddressId">🗑️</button>
+                                <button class="btn btn-sm edit-btn me-1"
+                                        data-id="@addr.AddressId">
+                                    ✏️
+                                </button>
+
+                                <button class="btn btn-sm delete-btn"
+                                        data-id="@addr.AddressId">
+                                    🗑️
+                                </button>
                             </div>
 
                         </div>
                     </div>
+
                 }
             }
             else
@@ -181,7 +188,7 @@
                 fetch('/Profile/AddAddress', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ Address: address, Pincode: pincode, District: district, State: state, Country: country })
+                    body: JSON.stringify({ Address: address, Pincode: pincode, District: district, State: state, Country: country,City : city })
                 })
                     .then(res => res.json())
                     .then(data => {

@@ -59,3 +59,134 @@ textarea {
     .btn-save:hover {
         background: linear-gradient(135deg, #ff5770, #ff94b3);
     }
+/* ---------- Page Layout ---------- */
+.profile-wrapper {
+    max-width: 850px;
+    margin: 40px auto;
+}
+
+.card-modern {
+    background: #ffffff;
+    padding: 30px 35px;
+    border-radius: 18px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.fancy-heading {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    color: #333;
+}
+
+/* ---------- Saved Address Card ---------- */
+.saved-address-card {
+    background: #fafafa;
+    border: 1px solid #e6e6e6;
+    border-radius: 16px;
+    padding: 20px 22px;
+    position: relative;
+    transition: 0.2s ease;
+}
+
+    .saved-address-card:hover {
+        box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+        transform: translateY(-3px);
+    }
+
+/* Textarea styling */
+.address-text {
+    background: transparent;
+    border: none;
+    resize: none;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+/* Labels */
+.form-label {
+    font-size: 13px;
+}
+
+/* Inputs */
+.form-control-sm,
+.form-control {
+    border-radius: 10px;
+    border: 1px solid #d6d6d6;
+}
+
+/* ---------- Edit & Delete Buttons ---------- */
+.edit-btn, .delete-btn {
+    border-radius: 10px;
+    padding: 3px 8px;
+    font-size: 13px;
+}
+
+.edit-btn {
+    border-color: #0080ff;
+    color: #0080ff;
+}
+
+    .edit-btn:hover {
+        background: #0080ff;
+        color: white;
+    }
+
+.delete-btn {
+    border-color: #ff4d4d;
+    color: #ff4d4d;
+}
+
+    .delete-btn:hover {
+        background: #ff4d4d;
+        color: white;
+    }
+
+/* ---------- Add New Address Section ---------- */
+.add-address-section {
+    background: #fff7f7;
+    border: 1px solid #ffdada;
+    padding: 25px;
+    border-radius: 16px;
+    margin-top: 40px;
+}
+
+    .add-address-section h5 {
+        color: #444;
+        font-weight: 600;
+    }
+
+    /* Inputs in add section */
+    .add-address-section .form-control {
+        border-radius: 12px;
+        border: 1px solid #bbb;
+    }
+
+/* Add button */
+#addAddressBtn {
+    background: linear-gradient(135deg, #ff6b8a, #ff8ab5);
+    color: white;
+    padding: 10px 25px;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    transition: 0.2s ease;
+}
+
+    #addAddressBtn:hover {
+        background: linear-gradient(135deg, #ff4d70, #ff7ca7);
+    }
+
+/* ---------- Highlighting editable mode ---------- */
+textarea:not([readonly]),
+input:not([readonly]) {
+    background: #fff !important;
+    border: 1px solid #ff80a0 !important;
+    box-shadow: 0 0 3px rgba(255,100,140,0.4);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .saved-address-card {
+        padding: 18px;
+    }
+}

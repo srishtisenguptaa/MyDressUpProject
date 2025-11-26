@@ -33,16 +33,58 @@
             <button class="btn btn-outline-dark dropdown-toggle shadow-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="bi bi-funnel"></i> Filter
             </button>
-            <ul class="dropdown-menu modern-dropdown" id="filterMenu">
+
+            <ul class="dropdown-menu modern-dropdown p-2" id="filterMenu" style="min-width: 260px;">
+
+                <!-- Categories -->
                 <li><h6 class="dropdown-header text-muted">Categories</h6></li>
                 <li><a class="dropdown-item filter-option" data-category="Dresses">Dresses</a></li>
                 <li><a class="dropdown-item filter-option" data-category="Tops">Tops</a></li>
                 <li><a class="dropdown-item filter-option" data-category="Jeans">Jeans</a></li>
                 <li><a class="dropdown-item filter-option" data-category="Winter Wear">Winter Wear</a></li>
+
                 <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item text-danger fw-semibold clear-filters" href="#">Clear Filters</a></li>
+
+                <!-- Availability -->
+                <li><h6 class="dropdown-header text-muted">Availability</h6></li>
+                <li><a class="dropdown-item filter-availability" data-availability="in-stock">In Stock</a></li>
+                <li><a class="dropdown-item filter-availability" data-availability="out-of-stock">Out of Stock</a></li>
+
+                <li><hr class="dropdown-divider"></li>
+
+                <!-- Price Range -->
+                <li><h6 class="dropdown-header text-muted">Price Range</h6></li>
+                <li>
+                    <div class="px-3 py-2">
+                        <input type="number" id="minPrice" class="form-control form-control-sm mb-2" placeholder="Min ₹">
+                        <input type="number" id="maxPrice" class="form-control form-control-sm" placeholder="Max ₹">
+                        <button class="btn btn-dark btn-sm w-100 mt-2 apply-price-filter">Apply</button>
+                    </div>
+                </li>
+
+                <li><hr class="dropdown-divider"></li>
+
+                <!-- Ratings -->
+                <li><h6 class="dropdown-header text-muted">Ratings</h6></li>
+                <li><a class="dropdown-item filter-rating" data-rating="4">⭐ 4 & above</a></li>
+                <li><a class="dropdown-item filter-rating" data-rating="3">⭐ 3 & above</a></li>
+                <li><a class="dropdown-item filter-rating" data-rating="2">⭐ 2 & above</a></li>
+                <li><a class="dropdown-item filter-rating" data-rating="1">⭐ 1 & above</a></li>
+
+                <li><hr class="dropdown-divider"></li>
+
+                <!-- New Arrivals -->
+                <li><h6 class="dropdown-header text-muted">New Arrivals</h6></li>
+                <li><a class="dropdown-item filter-new" data-new="7">Last 7 Days</a></li>
+                <li><a class="dropdown-item filter-new" data-new="30">Last 30 Days</a></li>
+
+                <li><hr class="dropdown-divider"></li>
+
+                <!-- CLEAR FILTER -->
+                <li><a class="dropdown-item text-danger fw-semibold clear-filters" href="#">Clear All Filters</a></li>
             </ul>
-        </div> 
+        </div>
+
 
         <!-- Center: Title -->
         <h2 class="fancy-heading mb-0 flex-grow-1 text-center">

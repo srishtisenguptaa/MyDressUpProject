@@ -24,17 +24,20 @@
                 }
 
                 container.innerHTML = result.data.map(item => `
-                    <div class="col-md-3 col-sm-6">
+                    <div class="col-md-3 col-sm-6 wishlist-card" data-product="${item.productId}">
                         <div class="card shadow-sm h-100">
                             <img src="${item.imageUrl}" class="card-img-top" alt="${item.title}">
                             <div class="card-body text-center">
                                 <h6 class="card-title">${item.title}</h6>
                                 <p class="card-text fw-semibold">₹${item.price}</p>
                                 <div class="divider"></div>
+
+                                <!-- Size selection popup trigger -->
                                 <div class="d-flex justify-content-center gap-2 mt-3">
                                     <button class="wishlist-btn remove-btn" data-id="${item.productId}">
                                         <i class="bi bi-trash"></i> Remove
                                     </button>
+
                                     <button class="wishlist-btn move-to-cart-btn" data-id="${item.productId}">
                                         <i class="bi bi-cart"></i> Move to Cart
                                     </button>
@@ -48,59 +51,131 @@
                 container.innerHTML = `<p class="text-center text-danger">Error loading wishlist.</p>`;
             }
 
-            // Handle button actions
+            // ------------------------------------
+            // 🔥 UNIVERSAL POPUP FOR SIZE SELECTION
+            // ------------------------------------
+            function openSizePopup(productId) {
+                const overlay = document.createElement("div");
+                overlay.id = "sizeOverlay";
+                overlay.style = `
+                    position: fixed; top:0; left:0; width:100%; height:100%;
+                    background: rgba(0,0,0,0.5); z-index:9999; display:flex;
+                    justify-content:center; align-items:center;
+                `;
+
+                const popup = document.createElement("div");
+                popup.style = `
+                    background:white; padding:20px; border-radius:10px; width:300px;
+                    text-align:center; box-shadow:0 0 15px rgba(0,0,0,0.3);
+                `;
+
+                popup.innerHTML = `
+                    <h5>Select Size</h5>
+                    <div class="d-flex justify-content-center gap-2 my-3">
+                        <button class="size-opt btn btn-outline-dark" data-size="S">S</button>
+                        <button class="size-opt btn btn-outline-dark" data-size="M">M</button>
+                        <button class="size-opt btn btn-outline-dark" data-size="L">L</button>
+                       
+                    </div>
+                    <button id="closeSizePopup" class="btn btn-secondary btn-sm mt-2">Cancel</button>
+                `;
+
+                overlay.appendChild(popup);
+                document.body.appendChild(overlay);
+
+                // Close popup
+                document.getElementById("closeSizePopup").onclick = () => {
+                    overlay.remove();
+                };
+
+                // When size is clicked
+                document.querySelectorAll(".size-opt").forEach(btn => {
+                    btn.onclick = async () => {
+                        const size = btn.dataset.size;
+                        await moveToCart(productId, size);
+                        overlay.remove();
+                    };
+                });
+            }
+
+            // ---------------------------------------------------
+            // 🔥 Move to Cart + Auto Remove from Wishlist Function
+            // ---------------------------------------------------
+            async function moveToCart(productId, size) {
+                try {
+                    const payload = {
+                        ProductId: productId,
+                        Size: size,
+                        Quantity: 1
+                    };
+
+                    const res = await fetch('/Cart/AddToCart', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const result = await res.json();
+
+                    // if (result.success) {
+                    //     // Auto-remove from wishlist
+                    //     await fetch('/Wishlist/Remove', {
+                    //         method: 'POST',
+                    //         headers: { 'Content-Type': 'application/json' },
+                    //         body: JSON.stringify({ productId })
+                    //     });
+
+                    //     document.querySelector(`.wishlist-card[data-product="${productId}"]`)?.remove();
+
+                    //     if (container.querySelectorAll('.wishlist-card').length === 0) {
+                    //         container.innerHTML = `<p class="text-center text-muted">Your wishlist is empty!</p>`;
+                    //     }
+
+                    //     window.location.href = "/Home/Cart";
+                    // } else {
+                    //     alert(result.message || "Failed to move item");
+                    // }
+                } catch (err) {
+                    console.error(err);
+                    alert("Something went wrong");
+                }
+            }
+
+            // ------------------------------------
+            // CLICK HANDLERS
+            // ------------------------------------
             container.addEventListener('click', async (e) => {
                 const removeBtn = e.target.closest('.remove-btn');
                 const moveBtn = e.target.closest('.move-to-cart-btn');
 
-                // Remove button logic
+                // ❌ REMOVE ITEM
                 if (removeBtn) {
                     const productId = parseInt(removeBtn.dataset.id);
-                    try {
-                        const res = await fetch('/Wishlist/Remove', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ productId })
-                        });
+                    const res = await fetch('/Wishlist/Remove', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ productId })
+                    });
 
-                        const result = await res.json();
-                        if (result.success) {
-                            removeBtn.closest('.col-md-3').remove();
-                            if (container.querySelectorAll('.col-md-3').length === 0) {
-                                container.innerHTML = `<p class="text-center text-muted">Your wishlist is empty!</p>`;
-                            }
+                    const result = await res.json();
+                    if (result.success) {
+                        removeBtn.closest('.wishlist-card').remove();
+
+                        if (container.querySelectorAll('.wishlist-card').length === 0) {
+                            container.innerHTML = `<p class="text-center text-muted">Your wishlist is empty!</p>`;
                         }
-                    } catch (err) {
-                        console.error("Failed to remove item:", err);
                     }
                 }
 
-                // Move to Cart button logic
+                // 🛒 MOVE TO CART → SHOW POPUP
                 if (moveBtn) {
                     const productId = parseInt(moveBtn.dataset.id);
-                    try {
-                        const res = await fetch('/Cart/Add', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ productId })
-                        });
-
-                        const result = await res.json();
-                        if (result.success) {
-                            alert("Item moved to cart 🛒");
-                            moveBtn.closest('.col-md-3').remove();
-
-                            if (container.querySelectorAll('.col-md-3').length === 0) {
-                                container.innerHTML = `<p class="text-center text-muted">Your wishlist is empty!</p>`;
-                            }
-                        } else {
-                            alert(result.message || "Failed to move item to cart.");
-                        }
-                    } catch (err) {
-                        console.error("Failed to move item to cart:", err);
-                    }
+                    openSizePopup(productId);
                 }
             });
         });
     </script>
 }
+
+
+
