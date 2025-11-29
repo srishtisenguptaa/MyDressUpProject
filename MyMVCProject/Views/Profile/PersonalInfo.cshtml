@@ -181,7 +181,8 @@
                 const country = document.getElementById("country").value.trim();
                 const city = document.getElementById("city").value.trim();
                 if (!address || !pincode) {
-                    alert("Please fill address & pincode!");
+                   // alert("Please fill address & pincode!");
+                    showCartPopup("Please fill address & pincode!");
                     return;
                 }
 
@@ -191,28 +192,83 @@
                     body: JSON.stringify({ Address: address, Pincode: pincode, District: district, State: state, Country: country,City : city })
                 })
                     .then(res => res.json())
-                    .then(data => {
-                        alert(data.message);
-                        if (data.success) location.reload();
-                    });
-            });
+                            .then(data => {
+                showCartPopup("Address Added");
 
+                if (data.success) {
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+                }
+            });
+            });
+           
+            function showCartPopup(message) {
+            const popup = document.createElement("div");
+            popup.className = "cart-popup";
+            popup.textContent = message;
+
+            document.body.appendChild(popup);
+
+            setTimeout(() => {
+                popup.classList.add("show");
+            }, 10);
+
+            // Auto close after 2 seconds
+            setTimeout(() => {
+                popup.classList.remove("show");
+                setTimeout(() => popup.remove(), 300);
+            }, 2000);
+        }
+            
+        function showConfirmModal(message, onConfirm) {
+            const modal = document.createElement("div");
+            modal.className = "custom-modal-overlay";
+
+            modal.innerHTML = `
+                <div class="custom-modal">
+                    <p>${message}</p>
+                    <div class="custom-modal-buttons">
+                        <button class="confirm-yes">Yes</button>
+                        <button class="confirm-no">No</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+
+            modal.querySelector(".confirm-yes").onclick = () => {
+                modal.remove();
+                onConfirm();
+            };
+
+            modal.querySelector(".confirm-no").onclick = () => {
+                modal.remove();
+            };
+        }
             // ---------------- Delete ----------------
             document.querySelectorAll(".delete-btn").forEach(btn => {
                 btn.addEventListener("click", () => {
                     const id = btn.dataset.id;
-                    if (confirm("Delete this address?")) {
-                        fetch('/Profile/DeleteAddress', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                            body: new URLSearchParams({ id })
-                        })
-                            .then(res => res.json())
-                            .then(data => {
-                                alert(data.message);
-                                if (data.success) location.reload();
-                            });
-                    }
+                showConfirmModal("Delete this address?", () => {
+
+                    fetch('/Profile/DeleteAddress', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: new URLSearchParams({ id })
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            showCartPopup(data.message);
+
+                            if (data.success) {
+                                setTimeout(() => location.reload(), 1000);
+                            }
+                });
+
+        });
+
+
                 });
             });
 
@@ -276,5 +332,7 @@
             });
 
         });
+
+        
     </script>
 }

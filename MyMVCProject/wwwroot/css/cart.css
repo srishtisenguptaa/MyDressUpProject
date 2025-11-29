@@ -1,0 +1,92 @@
+﻿/* Overlay */
+.custom-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 20000;
+    backdrop-filter: blur(3px);
+}
+
+/* Modal Box */
+.custom-modal {
+    background: #fff;
+    padding: 25px 30px;
+    border-radius: 18px;
+    width: 360px;
+    text-align: center;
+    /* Vibrant pink-orange gradient border */
+    border: 3px solid transparent;
+    background-image: linear-gradient(#fff, #fff), linear-gradient(135deg, #ff5f7e, #ff9f68);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.25);
+    animation: modalPop 0.25s ease-out;
+}
+
+/* Modal open animation */
+@keyframes modalPop {
+    from {
+        transform: scale(0.85);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Message */
+.custom-modal p {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+/* Buttons container */
+.custom-modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+/* YES button */
+.custom-modal .confirm-yes {
+    background: linear-gradient(135deg, #ff5f7e, #ff884d);
+    border: none;
+    padding: 8px 25px;
+    border-radius: 10px;
+    font-size: 16px;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+    box-shadow: 0 4px 10px rgba(255, 100, 100, 0.3);
+}
+
+    .custom-modal .confirm-yes:hover {
+        transform: scale(1.05);
+    }
+
+/* NO button (Bootstrap gray look) */
+.custom-modal .confirm-no {
+    background: #e4e4e4;
+    border: none;
+    padding: 8px 25px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+    .custom-modal .confirm-no:hover {
+        background: #d5d5d5;
+    }

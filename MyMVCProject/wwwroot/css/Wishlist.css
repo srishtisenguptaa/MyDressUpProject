@@ -102,3 +102,23 @@ html, body {
 body {
     padding-bottom: 40px;
 }
+.cart-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, #ff5f7e, #ff884d);
+    color: white;
+    padding: 15px 25px;
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 16px;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    z-index: 9999;
+}
+
+    .cart-popup.show {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.05);
+    }

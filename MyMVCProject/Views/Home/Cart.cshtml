@@ -1,5 +1,5 @@
 ﻿@model List<MyMVCProject.ViewModels.CartItemViewModel>
-
+<link rel="stylesheet" href="~/css/cart.css" asp-append-version="true" />
 <div class="container my-4">
 
     <!-- If cart is empty -->
@@ -43,12 +43,17 @@
     }
     else if (addresses.Count == 1)
     {
+        // Auto-select the only address
+        selectedAddress = addresses[0];
+        selectedId = selectedAddress.AddressId;
+
         <div class="address-box p-3 border rounded mb-3">
-            <h5>Deliver to: <strong>@addresses[0].UserName</strong></h5>
-            <p>@addresses[0].FullAddress</p>
+            <h5>Deliver to: <strong>@selectedAddress.UserName</strong></h5>
+            <p>@selectedAddress.FullAddress</p>
             <a href="/Profile/PersonalInfo" class="btn btn-outline-dark btn-sm mt-2">Change or Add Address</a>
         </div>
     }
+
     else
     {
         <div class="address-box p-3 border rounded mb-3">
@@ -207,21 +212,34 @@
     //-----------------------------
     // Remove Item
     //-----------------------------
-    document.addEventListener("click", async (e) => {
+        document.addEventListener("click", async (e) => {
         const btn = e.target.closest(".remove-item");
         if (!btn) return;
 
-        if (!confirm("Remove item from cart?")) return;
+        // Show custom confirm modal
+        showConfirmModal("Remove item from cart?", async () => {
 
-        const res = await fetch("/Cart/Remove", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ cartItemId: btn.dataset.id })
+            // User clicked YES
+            const res = await fetch("/Cart/Remove", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ cartItemId: btn.dataset.id })
+            });
+
+                const data = await res.json();
+
+            if (data.success) {
+                //showCartPopup("Deleted Successfully");
+                location.reload();
+                // setTimeout(() => {
+                //     location.reload();
+                // }, 1000); // wait 1 sec so popup is visible
+            }
+            
+
         });
-
-        const data = await res.json();
-        if (data.success) location.reload();
     });
+
 
     //-----------------------------
     // Place Order
@@ -247,4 +265,31 @@
         document.getElementById("overlay").style.display = "none";
         location.reload();
     });
+
+        function showConfirmModal(message, onConfirm) {
+        const modal = document.createElement("div");
+        modal.className = "custom-modal-overlay";
+
+        modal.innerHTML = `
+            <div class="custom-modal">
+                <p>${message}</p>
+                <div class="custom-modal-buttons">
+                    <button class="confirm-yes">Yes</button>
+                    <button class="confirm-no">No</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        modal.querySelector(".confirm-yes").onclick = () => {
+            modal.remove();
+            onConfirm();
+        };
+
+        modal.querySelector(".confirm-no").onclick = () => {
+            modal.remove();
+        };
+    }
+
 </script>

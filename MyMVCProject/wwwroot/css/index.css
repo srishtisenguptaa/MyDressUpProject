@@ -426,3 +426,77 @@ html, body {
     background: black !important;
     color: white !important;
 }
+
+.cart-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, #ff5f7e, #ff884d);
+    color: white;
+    padding: 15px 25px;
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 16px;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    z-index: 9999;
+}
+
+    .cart-popup.show {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.05);
+    }
+footer {
+    font-size: 14px; /* smaller overall */
+    background-color: #f8f9fa;
+    color: #333;
+    padding: 50px;
+}
+
+    footer h3,
+    footer h4 {
+        font-size: 16px; /* smaller heading */
+        font-weight: 600;
+    }
+
+    footer p {
+        font-size: 13px; /* subtle paragraph size */
+        margin-bottom: 6px;
+        color: #555;
+    }
+
+    footer .social-icon i {
+        font-size: 14px; /* smaller icons */
+        color: #555;
+        transition: 0.2s ease-in-out;
+    }
+
+    footer .social-icon:hover i {
+        color: #000;
+    }
+
+    footer input.form-control {
+        font-size: 13px;
+        padding: 8px 14px;
+    }
+
+    footer .form-check-label {
+        font-size: 13px;
+    }
+
+    footer button.btn {
+        font-size: 13px;
+        padding: 6px 18px;
+    }
+
+    footer .container.py-5 {
+        padding-top: 2rem !important;
+        padding-bottom: 2rem !important;
+    }
+
+    footer .copyright {
+        font-size: 12px;
+        color: #777;
+    }
+

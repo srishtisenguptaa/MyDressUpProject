@@ -20,7 +20,7 @@ namespace MyMVCProject.Controllers
         [HttpGet]
         public IActionResult GetProducts()
         {
-            var products = _context.Products.ToList();
+            var products = _context.Products.Where(x => x.InStock == true).ToList();
             return Ok(products);
         }
 

@@ -116,7 +116,14 @@
                     });
 
                     const result = await res.json();
-
+                   if (result.success) {
+                    
+                     //  window.location.href = "/Home/Cart";
+                       showCartPopup("Item successfully added to cart!");
+                    } else {
+                        // server returned success: false
+                        alert(result.message || "Unable to add item to cart");
+                    }
                     // if (result.success) {
                     //     // Auto-remove from wishlist
                     //     await fetch('/Wishlist/Remove', {
@@ -164,6 +171,7 @@
                         if (container.querySelectorAll('.wishlist-card').length === 0) {
                             container.innerHTML = `<p class="text-center text-muted">Your wishlist is empty!</p>`;
                         }
+                        showCartPopup("Item Removed!");
                     }
                 }
 
@@ -174,6 +182,24 @@
                 }
             });
         });
+
+        function showCartPopup(message) {
+            const popup = document.createElement("div");
+            popup.className = "cart-popup";
+            popup.textContent = message;
+
+            document.body.appendChild(popup);
+
+            setTimeout(() => {
+                popup.classList.add("show");
+            }, 10);
+
+            // Auto close after 2 seconds
+            setTimeout(() => {
+                popup.classList.remove("show");
+                setTimeout(() => popup.remove(), 300);
+            }, 2000);
+        }
     </script>
 }
 

@@ -88,7 +88,7 @@
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li><a class="dropdown-item" asp-controller="Home" asp-action="MyOrders">My Orders</a></li>
                                     <li><a class="dropdown-item" asp-controller="Profile" asp-action="PersonalInfo">My Info</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Account" asp-action="Logout">Logout</a></li>
+                                    <li><a class="dropdown-item logout-link" asp-controller="Account" asp-action="Logout">Logout</a></li>
                                 </ul>
                             </div>
                         }
@@ -115,42 +115,6 @@
         </main>
     </div>
 
-   @*  <footer class="bg-light border-top text-dark mt-4">
-        <div class="container py-5">
-            <div class="row">
-                <!-- Left Section -->
-                <div class="col-md-6 mb-4 mb-md-0">
-                    <h3 class="fw-bold">Big Dresses That Make You Stand Out</h3>
-                    <p class="mt-3 mb-2">123 Fashion Street, Kolkata, India</p>
-                    <div class="d-flex gap-3 mt-3">
-                        <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
-                    </div>
-                </div>
-
-                <!-- Right Section -->
-                <div class="col-md-6">
-                    <h4 class="fw-bold">Stay Connected With Us</h4>
-                    <form class="mt-3">
-                        <div class="mb-3">
-                            <input type="email" class="form-control rounded-pill" placeholder="Enter your email">
-                        </div>
-                        <div class="form-check mb-3">
-                            <input type="checkbox" class="form-check-input" id="subscribeCheck">
-                            <label class="form-check-label" for="subscribeCheck">Subscribe to newsletter</label>
-                        </div>
-                        <button type="submit" class="btn btn-dark rounded-pill">Subscribe</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- Bottom Copyright -->
-        <div class="container text-center py-3 border-top">
-            &copy; 2025 - DressUp - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer> *@
     <!-- Add FontAwesome for social icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
@@ -222,6 +186,7 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script>
+
         document.addEventListener('DOMContentLoaded', function () {
             const searchForm = document.getElementById('searchForm');
             const searchInput = document.getElementById('searchInput');
@@ -258,6 +223,44 @@
                 }
             });
         });
+         
+        function showConfirmModal(message, onConfirm) {
+            const modal = document.createElement("div");
+            modal.className = "custom-modal-overlay";
+
+            modal.innerHTML = `
+                <div class="custom-modal">
+                    <p>${message}</p>
+                    <div class="custom-modal-buttons">
+                        <button class="confirm-yes">Yes</button>
+                        <button class="confirm-no">No</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+
+            modal.querySelector(".confirm-yes").onclick = () => {
+                modal.remove();
+                onConfirm();
+            };
+
+            modal.querySelector(".confirm-no").onclick = () => {
+                modal.remove();
+            };
+        }
+           
+        document.addEventListener("click", function (e) {
+            const logoutBtn = e.target.closest(".logout-link");
+            if (!logoutBtn) return;
+
+            e.preventDefault(); // stop immediate logout
+
+            showConfirmModal("Are you sure you want to logout?", () => {
+                window.location.href = logoutBtn.href;
+            });
+        });
+
     </script>
 
 
