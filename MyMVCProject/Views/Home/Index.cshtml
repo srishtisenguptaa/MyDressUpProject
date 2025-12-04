@@ -37,11 +37,13 @@
             <ul class="dropdown-menu modern-dropdown p-2" id="filterMenu" style="min-width: 260px;">
 
                 <!-- Categories -->
-                <li><h6 class="dropdown-header text-muted">Categories</h6></li>
-                <li><a class="dropdown-item filter-option" data-category="Dresses">Dresses</a></li>
-                <li><a class="dropdown-item filter-option" data-category="Tops">Tops</a></li>
-                <li><a class="dropdown-item filter-option" data-category="Jeans">Jeans</a></li>
-                <li><a class="dropdown-item filter-option" data-category="Winter Wear">Winter Wear</a></li>
+                <div id="categoryList"></div>
+               @*  <li><h6 class="dropdown-header text-muted">Categories</h6></li>
+                <li><a class="dropdown-item filter-option" data-category="dress">Dresses</a></li>
+                <li><a class="dropdown-item filter-option" data-category="shirt">Shirt</a></li>
+                <li><a class="dropdown-item filter-option" data-category="jeans">Jeans</a></li>
+                <li><a class="dropdown-item filter-option" data-category="jacket">Jacket</a></li>
+                <li><a class="dropdown-item filter-option" data-category="coat">Coat</a></li> *@
 
                 <li><hr class="dropdown-divider"></li>
 
@@ -163,7 +165,7 @@
         const searchForm = document.getElementById('searchForm');
         const searchInput = document.getElementById('searchInput');
 
-        let selectedCategory = "";
+       
         let selectedSort = "";
         let allProducts = []; // ✅ Keep all fetched products in memory
 
@@ -194,33 +196,125 @@
                 if (loading) loading.style.display = "none";
             }
         }
-
+       
+        let selectedCategory = "";
+        let selectedAvailability = "";
+        let selectedRating = "";
+        let minPrice = null;
+        let maxPrice = null;
+        let selectedNewDays = "";
+       
         // ✅ Apply filtering + sorting + render in one place
-                function applyFiltersAndRender() {
+                           // ✅ Apply filtering + sorting + render in one place
+        async function applyFiltersAndRender() {
+            if (!allProducts || !Array.isArray(allProducts)) return;
+
             let filtered = [...allProducts];
 
-            // --- Apply Category Filter ---
+            // --- CATEGORY filter ---
             if (selectedCategory) {
-                filtered = filtered.filter(p =>
-                    p.category?.toLowerCase() === selectedCategory.toLowerCase()
-                );
+                filtered = filtered.filter(p => p.type?.toLowerCase() === selectedCategory.toLowerCase());
             }
 
-            // --- Apply Sorting ---
-            if (selectedSort === "low") {
-                filtered.sort((a, b) => a.price - b.price);
-            } else if (selectedSort === "high") {
-                filtered.sort((a, b) => b.price - a.price);
-            } else if (selectedSort === "rating") {
-                filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-            } else if (selectedSort === "newest") {
-                filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            // --- AVAILABILITY filter ---
+            if (selectedAvailability === "in-stock") filtered = filtered.filter(p => p.inStock === true);
+            if (selectedAvailability === "out-of-stock") filtered = filtered.filter(p => p.inStock === false);
+
+            // --- PRICE RANGE filter ---
+            if (minPrice !== null) filtered = filtered.filter(p => Number(p.price) >= Number(minPrice));
+            if (maxPrice !== null) filtered = filtered.filter(p => Number(p.price) <= Number(maxPrice));
+
+            // --- RATING filter ---
+            if (selectedRating) filtered = filtered.filter(p => Number(p.rating ?? 0) >= Number(selectedRating));
+
+            // --- NEW ARRIVALS filter ---
+            if (selectedNewDays) {
+                const cutoff = new Date();
+                cutoff.setDate(cutoff.getDate() - Number(selectedNewDays));
+                filtered = filtered.filter(p => p.createdAt && new Date(p.createdAt) >= cutoff);
             }
 
-            console.log("🎯 After filter/sort:", filtered);
+            // --- SORTING ---
+            if (selectedSort === "low") filtered.sort((a, b) => a.price - b.price);
+            else if (selectedSort === "high") filtered.sort((a, b) => b.price - a.price);
+            else if (selectedSort === "rating") filtered.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+            else if (selectedSort === "newest") filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+            // Render products
             renderProducts(filtered);
             highlightWishlistItems();
-        }
+                    }
+                                 /* ---------------- FILTER HANDLERS ---------------- */
+
+                    // CATEGORY CLICK
+                    document.querySelectorAll(".filter-option").forEach(el => {
+                        el.addEventListener("click", () => {
+                            selectedCategory = el.dataset.category;
+                            document.querySelectorAll(".filter-option").forEach(a => a.classList.remove("active"));
+                            el.classList.add("active");
+                            applyFiltersAndRender();
+                        });
+                    });
+
+                    // AVAILABILITY CLICK
+                    document.querySelectorAll(".filter-availability").forEach(el => {
+                        el.addEventListener("click", () => {
+                            selectedAvailability = el.dataset.availability;
+                            document.querySelectorAll(".filter-availability").forEach(a => a.classList.remove("active"));
+                            el.classList.add("active");
+                            applyFiltersAndRender();
+                        });
+                    });
+
+                    // PRICE RANGE APPLY
+                    document.querySelectorAll(".apply-price-filter").forEach(el => {
+                        el.addEventListener("click", () => {
+                            minPrice = document.getElementById("minPrice").value || null;
+                            maxPrice = document.getElementById("maxPrice").value || null;
+                            minPrice = minPrice ? Number(minPrice) : null;
+                            maxPrice = maxPrice ? Number(maxPrice) : null;
+                            applyFiltersAndRender();
+                        });
+                    });
+
+                    // RATING CLICK
+                    document.querySelectorAll(".filter-rating").forEach(el => {
+                        el.addEventListener("click", () => {
+                            selectedRating = parseInt(el.dataset.rating);
+                            document.querySelectorAll(".filter-rating").forEach(a => a.classList.remove("active"));
+                            el.classList.add("active");
+                            applyFiltersAndRender();
+                        });
+                    });
+
+                    // NEW ARRIVALS CLICK
+                    document.querySelectorAll(".filter-new").forEach(el => {
+                        el.addEventListener("click", () => {
+                            selectedNewDays = parseInt(el.dataset.new);
+                            document.querySelectorAll(".filter-new").forEach(a => a.classList.remove("active"));
+                            el.classList.add("active");
+                            applyFiltersAndRender();
+                        });
+                    });
+
+                    // CLEAR ALL FILTERS
+                    document.querySelectorAll(".clear-filters").forEach(el => {
+                        el.addEventListener("click", (e) => {
+                            e.preventDefault();
+                            selectedCategory = "";
+                            selectedAvailability = "";
+                            selectedRating = "";
+                            selectedNewDays = "";
+                            minPrice = null;
+                            maxPrice = null;
+                            selectedSort = "";
+
+                            document.querySelectorAll(".filter-option, .filter-availability, .filter-rating, .filter-new").forEach(a => a.classList.remove("active"));
+                            applyFiltersAndRender();
+                        });
+                    });
+
+
 
         // ✅ Render product cards
         function renderProducts(products) {
@@ -234,27 +328,34 @@
             products.forEach(item => {
                 const fig = document.createElement('figure');
                 fig.classList.add('item');
-                fig.innerHTML = `
-                    <img src="${item.imageUrl}" alt="${item.title}">
-                    <figcaption>
-                        <h5>${item.title}</h5>
-                        <p>₹${item.price}</p>
-                        <span>⭐ ${item.rating || "N/A"}</span>
-                        <div class="hover-options">
-                            <div class="sizes">
-                                <button class="size" data-size="S">S</button>
-                                <button class="size" data-size="M">M</button>
-                                <button class="size" data-size="L">L</button>
-                            </div>
+                    fig.innerHTML = `
+        <img src="${item.imageUrl}" alt="${item.title}">
+        <figcaption>
+            <h5>${item.title}</h5>
+            <p>₹${item.price}</p>
+            <span>⭐ ${item.rating || "N/A"}</span>
 
-                            <div class="actions">
-                                <button class="wishlist-btn" data-id="${item.productId}">
-                                    <i class="bi bi-heart"></i>
-                                </button>
-                                <button class="add-cart" data-id="${item.productId}">Add to Cart</button>
-                            </div>
-                        </div>
-                    </figcaption>`;
+            <div class="hover-options">
+                <div class="sizes">
+                    <button class="size" data-size="S">S</button>
+                    <button class="size" data-size="M">M</button>
+                    <button class="size" data-size="L">L</button>
+                </div>
+
+                <div class="actions">
+                    <button class="wishlist-btn" data-id="${item.productId}">
+                        <i class="bi bi-heart"></i>
+                    </button>
+
+                    ${
+                        item.inStock
+                        ? `<button class="add-cart" data-id="${item.productId}">Add to Cart</button>`
+                        : `<button class="add-cart" disabled style="opacity:0.6; cursor:not-allowed;">Out of Stock</button>`
+                    }
+                </div>
+            </div>
+        </figcaption>`;
+
                 gallery.appendChild(fig);
             });
         }
@@ -496,7 +597,32 @@
         }
 
 
+            document.addEventListener("DOMContentLoaded", function () {
 
+            fetch("https://localhost:7080/api/product/categories")
+                .then(response => response.json())
+                .then(categories => {
+                    let container = document.getElementById("categoryList");
+
+                    container.innerHTML = ""; // Clear
+
+                    categories.forEach(cat => {
+                        // If null/empty, skip
+                        if (!cat) return;
+
+                        container.innerHTML += `
+                            <li>
+                                <a class="dropdown-item filter-option" data-category="${cat.toLowerCase()}">
+                                    ${cat}
+                                </a>
+                            </li>
+                        `;
+                    });
+                })
+                .catch(error => {
+                    console.error("Failed to load categories:", error);
+                });
+        });
                 
                 </script>
 
