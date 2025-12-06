@@ -35,4 +35,18 @@ public class EmailService
 
         await client.SendMailAsync(message);
     }
+
+    public async Task SendResetLinkAsync(string toEmail, string link)
+    {
+        var mail = new MailMessage();
+        mail.To.Add(toEmail);
+        mail.Subject = "Reset Your Password";
+        mail.Body = $"Click here to reset your password: {link}";
+        mail.From = new MailAddress("srishtisengupta544@gmail.com");
+
+        using var smtp = new SmtpClient("smtp.gmail.com", 587);
+        smtp.Credentials = new NetworkCredential("srishtisengupta544@gmail.com", "sdhe ncco itcc kdno");
+        smtp.EnableSsl = true;
+        await smtp.SendMailAsync(mail);
+    }
 }

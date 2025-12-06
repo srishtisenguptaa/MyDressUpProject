@@ -24,5 +24,8 @@ namespace MyMVCProject.Models
 
         public List<UserAddress> UserAddress { get; set; }  // <-- list
 
+        public string? PasswordResetToken { get; set; }
+        public DateTime? PasswordResetExpiry { get; set; }
+
     }
 }

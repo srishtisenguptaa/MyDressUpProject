@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using MyMVCProject.DataModel;
 using MyMVCProject.Models;
 using MyUserProject.Services;
+using System.Collections.Generic;
+using System.Net;
+using System.Net.Mail;
 using System.Security.Claims;
 
 namespace MyMVCProject.Controllers
@@ -31,16 +34,27 @@ namespace MyMVCProject.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(string email, string password)
         {
-            var user = _context.Users.FirstOrDefault(u => u.Email == email && u.PasswordHash == password);
+            var user = _context.Users.FirstOrDefault(u => u.Email == email);
 
-            if (user != null)
+            if (user == null)
             {
-                await SignInUser(user);
-                return RedirectToAction("Index", "Home");
+                ViewBag.Error = "Invalid email or password";
+                return View();
             }
 
-            ViewBag.Error = "Invalid email or password";
-            return View();
+            var hasher = new Microsoft.AspNetCore.Identity.PasswordHasher<User>();
+            var result = hasher.VerifyHashedPassword(null, user.PasswordHash, password);
+
+            if (result == Microsoft.AspNetCore.Identity.PasswordVerificationResult.Failed)
+            {
+                ViewBag.Error = "Invalid email or password";
+                return View();
+            }
+
+            await SignInUser(user);
+            return RedirectToAction("Index", "Home");
+
+            
         }
 
         // ---------------- LOGOUT ----------------
@@ -73,11 +87,12 @@ namespace MyMVCProject.Controllers
                 return View();
             }
 
+            var hasher = new Microsoft.AspNetCore.Identity.PasswordHasher<User>();
             var user = new User
             {
                 FullName = FullName,
                 Email = email,
-                PasswordHash = password,
+                PasswordHash = hasher.HashPassword(null, password),
                 CreatedAt = DateTime.Now
             };
 
@@ -179,5 +194,101 @@ namespace MyMVCProject.Controllers
                     ExpiresUtc = DateTime.UtcNow.AddMonths(6)
                 });
         }
+
+        [HttpGet]
+        public IActionResult ForgetPassword()
+        {
+            return View();
+        }
+       
+        [HttpPost]
+        public async Task<IActionResult> SendResetLink(string email)
+        {
+            var user = _context.Users.FirstOrDefault(x => x.Email == email);
+
+            if (user == null)
+            {
+                ViewBag.Message = "If this email exists, a reset link was sent.";
+                return View("ForgetPassword");
+            }
+
+            string token = Guid.NewGuid().ToString();
+
+            user.PasswordResetToken = token;
+            user.PasswordResetExpiry = DateTime.UtcNow.AddMinutes(30);
+
+            _context.SaveChanges();
+
+            string resetLink = Url.Action(
+                "ResetPassword",
+                "Account",
+                new { token = token },
+                Request.Scheme);
+
+            await _emailService.SendResetLinkAsync(email, resetLink);
+
+            ViewBag.Message = "Reset link sent to your email.";
+            return View("ForgetPassword");
+        }
+
+        [HttpGet]
+        public IActionResult ResetPassword(string token)
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                return RedirectToAction("ForgetPassword");
+            }
+
+            var user = _context.Users.FirstOrDefault(x =>
+                x.PasswordResetToken == token &&
+                x.PasswordResetExpiry > DateTime.UtcNow);
+
+            if (user == null)
+            {
+                return RedirectToAction("ForgetPassword");
+            }
+
+            ViewBag.Token = token; // ✅ send token to view
+            return View();
+        }
+
+        [HttpPost]
+        
+        public IActionResult ResetPassword(string token, string newPassword, string confirmPassword)
+        {
+            if (newPassword != confirmPassword)
+            {
+                ViewBag.Token = token;
+                ViewBag.Error = "Passwords do not match";
+                return View();
+            }
+
+            var user = _context.Users.FirstOrDefault(x =>
+                x.PasswordResetToken == token &&
+                x.PasswordResetExpiry > DateTime.UtcNow);
+
+            if (user == null)
+                return RedirectToAction("ForgetPassword"); // typo fixed
+
+            // Hash and save password
+            var hasher = new Microsoft.AspNetCore.Identity.PasswordHasher<User>();
+            user.PasswordHash = hasher.HashPassword(null, newPassword);
+
+            // Clear token
+            user.PasswordResetToken = null;
+            user.PasswordResetExpiry = null;
+
+            _context.SaveChanges();
+
+            
+    
+            return RedirectToAction("Login");
+        }
+
+
+
+
+
+
     }
 }
