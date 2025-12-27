@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using MyMVCProject.DataModel;
 using MyMVCProject.Models;
 using MyMVCProject.ViewModels;
+using Newtonsoft.Json;
 using System.Diagnostics;
 
 namespace MyMVCProject.Controllers
@@ -19,6 +20,17 @@ namespace MyMVCProject.Controllers
             _db = db;
         }
 
+        public async Task<IActionResult> NewPage()
+        {
+            string apiUrl = "http://127.0.0.1:8000/products";
+
+            HttpClient client = new HttpClient();
+            var response = await client.GetStringAsync(apiUrl);
+
+            var products = JsonConvert.DeserializeObject<List<Product>>(response);
+
+            return View(products);
+        }
         public PartialViewResult WomenSection()
         {
             return PartialView();
